@@ -3,7 +3,7 @@ using Dapper;
 
 public static class AccountsAccess
 {
-    private static readonly SqliteConnection _connection = new($"Data Source=DataSources/project.db");
+    private static readonly SqliteConnection _connection = new($"Data Source=DataSources/project.db;Foreign Keys=True");
     private const string _table = "Accounts";
 
     public static void Write(AccountModel account)
