@@ -12,14 +12,16 @@ public class AccountsLogic
 
     }
 
-    public AccountModel CheckLogin(string email, string password)
+    public AccountModel? CheckLogin(string email, string password)
     {
-        AccountModel acc = AccountsAccess.GetByEmail(email)!;
-        if (acc != null && acc.Password == password)
+        AccountModel? account = AccountsAccess.GetByEmail(email);
+        if (account != null && account.Password == password)
         {
-            CurrentAccount = acc;
-            return acc;
+            CurrentAccount = account;
+            return account;
         }
-        return null!;
+
+        CurrentAccount = null;
+        return null;
     }
 }
