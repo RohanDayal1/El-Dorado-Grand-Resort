@@ -6,5 +6,9 @@ public enum RegisterEnum
     InvalidEmail,
     EmailAlreadyExists,
     InvalidBirthDate,
-    InvalidPhoneNumber
+    InvalidPhoneNumber,
+    InvalidUser,
+    InvalidPassword,
+    PasswordMismatch,
+    InvalidRole
 }
