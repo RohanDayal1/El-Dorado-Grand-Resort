@@ -9,7 +9,7 @@ public class UserLogic
         if (!ValidateBirthdate(birthDate))
             return RegisterEnum.InvalidBirthDate;
 
-        DateTime date = DateTime.ParseExact(birthDate, "dd-MM-yyyy", null);
+        DateTime date = DateTime.ParseExact(birthDate, "yyyy-MM-dd", null);
 
         if (!ValidateEmail(email))
             return RegisterEnum.InvalidEmail;
@@ -38,7 +38,7 @@ public class UserLogic
     {
         DateTime date;
 
-        if (!DateTime.TryParseExact(birthDate, "dd-MM-yyyy", null,System.Globalization.DateTimeStyles.None, out date))
+        if (!DateTime.TryParseExact(birthDate, "yyyy-MM-dd", null,System.Globalization.DateTimeStyles.None, out date))
             return false;
 
         if (date > DateTime.Today)

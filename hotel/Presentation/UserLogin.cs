@@ -1,4 +1,4 @@
-public class UserLogin
+public static class UserLogin
 {
     private static UserLogic _userlogic = new();
     public static void Register()
