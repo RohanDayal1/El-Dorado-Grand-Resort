@@ -29,7 +29,7 @@ public class DatabaseInitializer
                 User_Id INTEGER PRIMARY KEY,
                 First_Name TEXT NOT NULL,
                 Last_Name TEXT NOT NULL,
-                Email TEXT NOT NULL UNIQUE,
+                Email TEXT NOT NULL,
                 Phone TEXT NOT NULL,
                 Date_Of_Birth TEXT
             );
@@ -60,12 +60,13 @@ public class DatabaseInitializer
 
             CREATE TABLE Reservation (
                 Reservation_Id INTEGER PRIMARY KEY,
+                ReservationCode TEXT NOT NULL UNIQUE,
                 User_Id INTEGER NOT NULL,
                 CheckInDate TEXT NOT NULL,
                 CheckOutDate TEXT NOT NULL,
                 TotalCost REAL NOT NULL DEFAULT 0,
-                Status TEXT NOT NULL DEFAULT 'pending'
-                    CHECK (Status IN ('pending','confirmed','cancelled')),
+                Status TEXT NOT NULL DEFAULT 'confirmed'
+                    CHECK (Status IN ('confirmed','cancelled')),
                 CHECK (CheckOutDate > CheckInDate),
                 FOREIGN KEY (User_Id) REFERENCES User(User_Id) ON DELETE RESTRICT
             );
@@ -73,8 +74,8 @@ public class DatabaseInitializer
             CREATE TABLE Reservation_Room (
                 Reservation_Id INTEGER NOT NULL,
                 Room_Id INTEGER NOT NULL,
-                Adults_Capacity INTEGER NOT NULL DEFAULT 1 CHECK (Adults_Capacity >= 1),
-                Children_Capacity INTEGER NOT NULL DEFAULT 0 CHECK (Children_Capacity >= 0),
+                Adults INTEGER NOT NULL DEFAULT 1 CHECK (Adults >= 1),
+                Children INTEGER NOT NULL DEFAULT 0 CHECK (Children >= 0),
                 PRIMARY KEY (Reservation_Id, Room_Id),
                 FOREIGN KEY (Reservation_Id) REFERENCES Reservation(Reservation_Id) ON DELETE CASCADE,
                 FOREIGN KEY (Room_Id) REFERENCES Room(Room_Id) ON DELETE RESTRICT
@@ -106,8 +107,8 @@ public class DatabaseInitializer
                 StartTime TEXT NOT NULL,
                 EndTime TEXT NOT NULL,
                 PartySize INTEGER NOT NULL CHECK (PartySize > 0),
-                Status TEXT NOT NULL DEFAULT 'pending'
-                    CHECK (Status IN ('pending','confirmed','cancelled')),
+                Status TEXT NOT NULL DEFAULT 'confirmed'
+                    CHECK (Status IN ('confirmed','cancelled')),
                 FOREIGN KEY (Account_Id) REFERENCES Account(Account_Id) ON DELETE RESTRICT,
                 FOREIGN KEY (Facility_Id) REFERENCES Facility(Facility_Id) ON DELETE RESTRICT
             );
@@ -120,8 +121,8 @@ public class DatabaseInitializer
                 StartTime TEXT NOT NULL,
                 EndTime TEXT NOT NULL,
                 PartySize INTEGER NOT NULL CHECK (PartySize > 0),
-                Status TEXT NOT NULL DEFAULT 'pending'
-                    CHECK (Status IN ('pending','confirmed','cancelled')),
+                Status TEXT NOT NULL DEFAULT 'confirmed'
+                    CHECK (Status IN ('confirmed','cancelled')),
                 FOREIGN KEY (Account_Id) REFERENCES Account(Account_Id) ON DELETE RESTRICT,
                 FOREIGN KEY (Activity_Id) REFERENCES Activity(Activity_Id) ON DELETE RESTRICT
             );
@@ -156,13 +157,13 @@ public class DatabaseInitializer
                 (1, 1, 101), (2, 1, 102), (3, 2, 201), (4, 2, 202),
                 (5, 3, 301), (6, 3, 302), (7, 4, 401), (8, 4, 402);
 
-            INSERT INTO Reservation (Reservation_Id, User_Id, CheckInDate, CheckOutDate, TotalCost, Status) VALUES
-                (1, 2, '2026-11-01', '2026-11-04', 300.00, 'confirmed'),
-                (2, 3, '2026-11-10', '2026-11-12', 400.00, 'pending'),
-                (3, 4, '2026-12-01', '2026-12-03', 500.00, 'cancelled'),
-                (4, 7, '2026-11-15', '2026-11-18', 600.00, 'confirmed');
+            INSERT INTO Reservation (Reservation_Id, ReservationCode, User_Id, CheckInDate, CheckOutDate, TotalCost, Status) VALUES
+                (1, 'K7M2QX', 2, '2026-11-01', '2026-11-04', 300.00, 'confirmed'),
+                (2, 'P4TW9B', 3, '2026-11-10', '2026-11-12', 400.00, 'confirmed'),
+                (3, 'H8ZN3C', 4, '2026-12-01', '2026-12-03', 500.00, 'cancelled'),
+                (4, 'R2VD6L', 7, '2026-11-15', '2026-11-18', 600.00, 'confirmed');
 
-            INSERT INTO Reservation_Room (Reservation_Id, Room_Id, Adults_Capacity, Children_Capacity) VALUES
+            INSERT INTO Reservation_Room (Reservation_Id, Room_Id, Adults, Children) VALUES
                 (1, 1, 2, 0),
                 (2, 5, 2, 2),
                 (3, 2, 1, 0),
@@ -181,12 +182,12 @@ public class DatabaseInitializer
             INSERT INTO Facility_Reservation
                 (Facility_Reservation_Id, Account_Id, Facility_Id, ReservationDate, StartTime, EndTime, PartySize, Status) VALUES
                 (1, 2, 2, '2026-11-02', '10:00', '11:00', 2, 'confirmed'),
-                (2, 3, 3, '2026-11-10', '18:00', '19:30', 4, 'pending');
+                (2, 3, 3, '2026-11-10', '18:00', '19:30', 4, 'cancelled');
 
             INSERT INTO Activity_Reservation
                 (Activity_Reservation_Id, Account_Id, Activity_Id, ReservationDate, StartTime, EndTime, PartySize, Status) VALUES
                 (1, 2, 1, '2026-11-03', '08:00', '09:00', 2, 'confirmed'),
-                (2, 3, 2, '2026-11-11', '10:00', '12:00', 4, 'pending');
+                (2, 3, 2, '2026-11-11', '10:00', '12:00', 4, 'confirmed');
         ");
 
     }
