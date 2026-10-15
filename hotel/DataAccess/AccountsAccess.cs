@@ -9,9 +9,12 @@ public static class AccountsAccess
         return connection.QueryFirstOrDefault<AccountModel>(@"
             SELECT
                 a.Account_Id AS Id,
-                u.Email AS Email,
+                a.User_Id AS UserId,
                 a.Password,
-                u.First_Name || ' ' || u.Last_Name AS FullName
+                a.Role,
+                u.First_Name AS FirstName,
+                u.Last_Name AS LastName,
+                u.Email AS Email
             FROM Account a
             INNER JOIN User u ON u.User_Id = a.User_Id
             WHERE u.Email = @Email COLLATE NOCASE;",

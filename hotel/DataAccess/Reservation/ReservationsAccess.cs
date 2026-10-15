@@ -1,6 +1,24 @@
 using Dapper;
 public static class ReservationsAccess
 {
+    public static IEnumerable<ReservationModel> GetByUserId(int userId)
+    {
+        using var connection = DatabaseInitializer.Connect();
+        const string sql = @"
+            SELECT
+                Reservation_Id AS ReservationId,
+                User_Id AS UserId,
+                CheckInDate,
+                CheckOutDate,
+                TotalCost,
+                Status
+            FROM Reservation
+            WHERE User_Id = @UserId
+            ORDER BY CheckInDate;";
+
+        return connection.Query<ReservationModel>(sql, new { UserId = userId });
+    }
+
     public static bool ReservationCodeExists(string reservationCode)
     {
         using var connection = DatabaseInitializer.Connect();

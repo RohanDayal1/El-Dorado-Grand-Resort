@@ -68,8 +68,18 @@ public static class Menu
 					}
 					else
 					{
-						Console.WriteLine($"\n  You have been logged out, {signedInAccount.FullName}.");
+						Console.WriteLine($"\n  You have been logged out, {signedInAccount.FirstName} {signedInAccount.LastName}.");
 						signedInAccount = null;
+					}
+					break;
+				case "6":
+					if (signedInAccount == null)
+					{
+						ShowPage("LOGIN REQUIRED", new[] { "Please log in to view your reservations." });
+					}
+					else
+					{
+						ReservationMenu.ShowReservations(signedInAccount);
 					}
 					break;
 				case "0":
@@ -93,13 +103,17 @@ public static class Menu
 		Console.WriteLine();
 		Console.WriteLine(signedInAccount == null
 			? "  Welcome! What would you like to know?"
-			: $"  Welcome back, {signedInAccount.FullName}!");
+			: $"  Welcome back, {signedInAccount.FirstName} {signedInAccount.LastName}!");
 		Console.WriteLine();
 		Console.WriteLine("  [1] About us");
 		Console.WriteLine("  [2] Our facilities");
 		Console.WriteLine("  [3] Contact us");
 		Console.WriteLine(signedInAccount == null ? "  [4] Login" : "  [4] My home");
 		Console.WriteLine(signedInAccount == null ? "  [5] Register" : "  [5] Log out");
+		if (signedInAccount != null)
+		{
+			Console.WriteLine("  [6] View my reservations");
+		}
 		Console.WriteLine("  [0] Exit");
 		Console.WriteLine();
 		Console.Write("  Select an option: ");
@@ -162,12 +176,14 @@ public static class Menu
 		Console.WriteLine("  EL DORADO GRAND RESORT  |  YOUR HOME");
 		Console.WriteLine(Border);
 		Console.WriteLine();
-		Console.WriteLine($"  You are now logged in as {account.FullName}.");
-		Console.WriteLine($"  Account email: {account.EmailAddress}");
+		Console.WriteLine($"  You are now logged in as {account.FirstName} {account.LastName}.");
+		Console.WriteLine($"  Email: {account.Email}");
 		Console.WriteLine();
 		Console.WriteLine("  Welcome to your resort homepage!");
 		Console.WriteLine("  Discover our comfortable rooms, swimming pool,");
 		Console.WriteLine("  restaurant and wellness facilities.");
+		Console.WriteLine();
+		Console.WriteLine("  Choose [6] from the home menu to see your reservations.");
 		Console.WriteLine();
 		Console.WriteLine(Border);
 		Console.Write("  Press Enter to continue to the home menu...");
