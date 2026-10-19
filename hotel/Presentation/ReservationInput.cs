@@ -33,7 +33,7 @@ public static class ReservationInput
     public static string? ReadText(string prompt)
     {
         Console.Write($"  {prompt}");
-        string? input = Console.ReadLine()?.Trim();
+        string? input = Console.ReadLine().Trim().ToLower();
         if (input == null || input.Equals("q", StringComparison.OrdinalIgnoreCase))
             return null;
 

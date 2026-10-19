@@ -1,7 +1,7 @@
 public static class RoomSelectionMenu
 {
-    public static RoomSelectionModel SelectRooms(DateTime checkInDate, DateTime checkOutDate,
-        int adults, int children, string preferredBedType)
+    public static RoomSelectionModel? SelectRooms(DateTime checkInDate, DateTime checkOutDate,
+        int adults, int children, string? preferredBedType)
     {
         var roomsLogic = new RoomsLogic();
         var reservationLogic = new ReservationLogic();
@@ -19,6 +19,8 @@ public static class RoomSelectionMenu
 
         while (true)
         {
+            ConsoleHelper.ShowHeader("SELECT YOUR ROOMS");
+            Console.WriteLine($"  Stay: {checkInDate:yyyy-MM-dd} to {checkOutDate:yyyy-MM-dd}");
             var cost = reservationLogic.CalculateTotalCost(checkInDate, checkOutDate,
                 selection.SelectedRooms, selection.AvailableRooms, selection.RoomTypes);
             if (cost.Errors.Count > 0)
@@ -46,11 +48,15 @@ public static class RoomSelectionMenu
                         selection.SelectedRooms, selection.AvailableRooms, selection.RoomTypes);
                     if (errors.Count == 0) return selection;
                     ShowSelectionErrors(errors);
+                    Console.Write("\n  Press Enter to continue selecting rooms...");
+                    Console.ReadLine();
                     break;
                 case "q":
                     return null;
                 default:
                     Console.WriteLine("  Choose 1, 2, 3, or q.");
+                    Console.Write("\n  Press Enter to continue selecting rooms...");
+                    Console.ReadLine();
                     break;
             }
         }
@@ -64,9 +70,12 @@ public static class RoomSelectionMenu
         if (choices.Count == 0)
         {
             Console.WriteLine("  All available rooms are selected. Remove a room or continue.");
+            Console.Write("\n  Press Enter to continue selecting rooms...");
+            Console.ReadLine();
             return true;
         }
 
+        ConsoleHelper.ShowHeader("ADD ROOMS");
         ShowAvailableRoomTypes(choices, selection.AvailableRooms, selection.SelectedRooms);
         RoomTypeModel? type = ReadRoomType(choices);
         if (type == null) return false;
@@ -76,7 +85,11 @@ public static class RoomSelectionMenu
 
         var result = logic.SelectRooms(type, quantity.Value, selection.AvailableRooms, selection.SelectedRooms);
         if (result.Errors.Count > 0)
+        {
             ShowQuantityErrors(result.Errors);
+            Console.Write("\n  Press Enter to continue selecting rooms...");
+            Console.ReadLine();
+        }
         else
             selection.SelectedRooms.AddRange(result.Rooms);
         return true;
@@ -121,13 +134,13 @@ public static class RoomSelectionMenu
         }
     }
 
-    private static int ReadRoomQuantity(RoomTypeModel roomType, int availableQuantity)
+    private static int? ReadRoomQuantity(RoomTypeModel roomType, int availableQuantity)
     {
         var logic = new ReservationLogic();
         while (true)
         {
             int? quantity = ReservationInput.ReadInt($"How many {roomType.Name} rooms? ");
-            if (quantity == null) return 0;
+            if (quantity == null) return null;
             var errors = logic.ValidateRoomQuantity(quantity.Value, availableQuantity);
             if (errors.Count == 0)
                 return quantity;
@@ -144,7 +157,7 @@ public static class RoomSelectionMenu
             Console.WriteLine("  No rooms selected.");
         foreach (var type in roomTypes)
         {
-            int quantity = selectedRooms.Count(selected => availableRooms.Any(room =>
+            var quantity = selectedRooms.Count(selected => availableRooms.Any(room =>
                 room.RoomId == selected.RoomId && room.Room_Type_Id == type.Room_Type_Id));
             if (quantity > 0)
                 Console.WriteLine($"  {quantity} x {type.Name}");
@@ -160,9 +173,12 @@ public static class RoomSelectionMenu
         if (selectedRooms.Count == 0)
         {
             Console.WriteLine("  There are no rooms to remove.");
+            Console.Write("\n  Press Enter to continue selecting rooms...");
+            Console.ReadLine();
             return false;
         }
 
+        ConsoleHelper.ShowHeader("REMOVE A ROOM");
         for (int index = 0; index < selectedRooms.Count; index++)
         {
             var room = availableRooms.First(room => room.RoomId == selectedRooms[index].RoomId);

@@ -1,9 +1,10 @@
 public class ReservationLogic
 {
     public IEnumerable<ReservationModel> GetByUserId(int userId)
-	{
-		return ReservationsAccess.GetByUserId(userId);
-	}
+    {
+        return ReservationsAccess.GetByUserId(userId);
+    }
+
     public List<ReservationDateErrors> ValidateDates(
         DateTime checkInDate,
         DateTime checkOutDate,
@@ -36,11 +37,15 @@ public class ReservationLogic
         List<RoomTypeModel> roomTypes
     )
     {
-        var selection = GetSelectedRoomTypes(selectedRooms, availableRooms, roomTypes);
-        if (selection.Errors.Count > 0)
-            return selection.Errors;
+        var (selectedTypes, errors) = GetSelectedRoomTypes(
+            selectedRooms,
+            availableRooms,
+            roomTypes
+        );
+        if (errors.Count > 0)
+            return errors;
 
-        int totalCapacity = CalculateTotalCapacity(selection.RoomTypes);
+        int totalCapacity = CalculateTotalCapacity(selectedTypes);
         return ReservationValidator.ValidateRoomSelection(
             adults,
             children,
@@ -72,17 +77,18 @@ public class ReservationLogic
         List<RoomTypeModel> roomTypes
     )
     {
-        decimal totalCost = 0m;
+        var (selectedTypes, errors) = GetSelectedRoomTypes(
+            selectedRooms,
+            availableRooms,
+            roomTypes
+        );
+        if (errors.Count > 0)
+            return (0m, errors);
 
-        var selection = GetSelectedRoomTypes(selectedRooms, availableRooms, roomTypes);
-        if (selection.Errors.Count > 0)
-            return (0m, selection.Errors);
-
-        foreach (var type in selection.RoomTypes)
-        {
-            totalCost += CalculateRoomCost(type, checkInDate, checkOutDate);
-        }
-        return (totalCost, selection.Errors);
+        decimal totalCost = selectedTypes.Sum(type =>
+            CalculateRoomCost(type, checkInDate, checkOutDate)
+        );
+        return (totalCost, errors);
     }
 
     private (List<RoomTypeModel> RoomTypes, List<RoomSelectionErrors> Errors) GetSelectedRoomTypes(
@@ -96,120 +102,122 @@ public class ReservationLogic
             availableRooms,
             roomTypes
         );
-        var selectedTypes = new List<RoomTypeModel>();
         if (errors.Count > 0)
-            return (selectedTypes, errors);
+            return (new List<RoomTypeModel>(), errors);
 
-        foreach (var selected in selectedRooms)
-        {
-            var room = availableRooms.First(room => room.RoomId == selected.RoomId);
-            var type = roomTypes.First(type => type.Room_Type_Id == room.Room_Type_Id);
-            selectedTypes.Add(type);
-        }
+        var selectedTypes = selectedRooms
+            .Select(selected => availableRooms.First(room => room.RoomId == selected.RoomId))
+            .Select(room => roomTypes.First(type => type.Room_Type_Id == room.Room_Type_Id))
+            .ToList();
+
         return (selectedTypes, errors);
     }
 
-    public (ReservationModel? Reservation, List<ReservationConfirmationErrors> Errors) ConfirmGuestReservation(
-        UserModel user, DateTime checkInDate, DateTime checkOutDate,
-        int adults, int children, List<ReservationRoomModel> selectedRooms,
-        List<RoomModel> availableRooms, DateTime today)
+    public ReservationModel ConfirmGuestReservation(
+        UserModel user,
+        DateTime checkInDate,
+        DateTime checkOutDate,
+        int adults,
+        int children,
+        List<ReservationRoomModel> selectedRooms,
+        List<RoomModel> availableRooms,
+        DateTime today
+    )
     {
-        return ConfirmReservation(user, checkInDate, checkOutDate, adults, children,
-            selectedRooms, availableRooms, today, false);
+        return ConfirmReservation(
+            user,
+            checkInDate,
+            checkOutDate,
+            adults,
+            children,
+            selectedRooms,
+            availableRooms,
+            today,
+            false
+        );
     }
 
-    public (ReservationModel? Reservation, List<ReservationConfirmationErrors> Errors) ConfirmAccountReservation(
-        AccountModel account, DateTime checkInDate, DateTime checkOutDate,
-        int adults, int children, List<ReservationRoomModel> selectedRooms,
-        List<RoomModel> availableRooms, DateTime today)
+    public ReservationModel ConfirmAccountReservation(
+        AccountModel account,
+        DateTime checkInDate,
+        DateTime checkOutDate,
+        int adults,
+        int children,
+        List<ReservationRoomModel> selectedRooms,
+        List<RoomModel> availableRooms,
+        DateTime today
+    )
     {
-        UserModel? user;
-        try
-        {
-            user = new AccountsLogic().GetGuestDetails(account);
-        }
-        catch (Exception)
-        {
-            user = null;
-        }
-        if (user == null)
-            return (null, new List<ReservationConfirmationErrors> { ReservationConfirmationErrors.AccountUnavailable });
-        return ConfirmReservation(user, checkInDate, checkOutDate, adults, children,
-            selectedRooms, availableRooms, today, true);
+        UserModel user =
+            new AccountsLogic().GetGuestDetails(account)
+            ?? throw new InvalidOperationException("The account has no guest details.");
+
+        return ConfirmReservation(
+            user,
+            checkInDate,
+            checkOutDate,
+            adults,
+            children,
+            selectedRooms,
+            availableRooms,
+            today,
+            true
+        );
     }
 
-    private (ReservationModel? Reservation, List<ReservationConfirmationErrors> Errors) ConfirmReservation(
-        UserModel user, DateTime checkInDate, DateTime checkOutDate,
-        int adults, int children, List<ReservationRoomModel> selectedRooms,
-        List<RoomModel> availableRooms, DateTime today, bool useExistingUser)
+    private ReservationModel ConfirmReservation(
+        UserModel user,
+        DateTime checkInDate,
+        DateTime checkOutDate,
+        int adults,
+        int children,
+        List<ReservationRoomModel> selectedRooms,
+        List<RoomModel> availableRooms,
+        DateTime today,
+        bool useExistingUser
+    )
     {
-        var errors = new List<ReservationConfirmationErrors>();
-        if (ValidateDates(checkInDate, checkOutDate, today).Count > 0)
-            errors.Add(ReservationConfirmationErrors.InvalidDates);
-        if (ValidateGuestCounts(adults, children).Count > 0)
-            errors.Add(ReservationConfirmationErrors.InvalidGuestCounts);
-        if (ValidateGuestDetails(user, today).Count > 0)
-            errors.Add(ReservationConfirmationErrors.InvalidGuestDetails);
-        if (errors.Count > 0)
-            return (null, errors);
+        List<RoomTypeModel> roomTypes = RoomsAccess.GetRoomTypes();
 
-        List<RoomTypeModel> roomTypes;
-        try
-        {
-            roomTypes = RoomsAccess.GetRoomTypes();
-        }
-        catch (Exception)
-        {
-            errors.Add(ReservationConfirmationErrors.RoomDataUnavailable);
-            return (null, errors);
-        }
+        bool isValid =
+            ValidateDates(checkInDate, checkOutDate, today).Count == 0
+            && ValidateGuestCounts(adults, children).Count == 0
+            && ValidateGuestDetails(user, today).Count == 0
+            && ValidateRoomSelection(
+                adults,
+                children,
+                selectedRooms,
+                availableRooms,
+                roomTypes
+            ).Count == 0;
 
-        if (ValidateRoomSelection(adults, children, selectedRooms, availableRooms, roomTypes).Count > 0)
-        {
-            errors.Add(ReservationConfirmationErrors.InvalidRoomSelection);
-            return (null, errors);
-        }
-        var cost = CalculateTotalCost(checkInDate, checkOutDate, selectedRooms, availableRooms, roomTypes);
-        if (cost.Errors.Count > 0)
-        {
-            errors.Add(ReservationConfirmationErrors.InvalidRoomSelection);
-            return (null, errors);
-        }
+        if (!isValid)
+            throw new InvalidOperationException("The reservation data is not valid.");
 
-        string code;
-        try
-        {
-            code = GenerateReservationCode();
-        }
-        catch (Exception)
-        {
-            errors.Add(ReservationConfirmationErrors.ReservationCodeGenerationFailed);
-            return (null, errors);
-        }
+        var cost = CalculateTotalCost(
+            checkInDate,
+            checkOutDate,
+            selectedRooms,
+            availableRooms,
+            roomTypes
+        );
 
         var reservation = new ReservationModel
         {
-            ReservationCode = code,
+            ReservationCode = GenerateReservationCode(),
             CheckInDate = checkInDate.Date,
             CheckOutDate = checkOutDate.Date,
-            Adults = adults,
-            Children = children,
             TotalCost = cost.TotalCost,
-            Status = "confirmed"
+            Status = "confirmed",
         };
-        try
-        {
-            reservation.ReservationId = useExistingUser
-                ? ReservationsAccess.SaveReservationForUser(user.UserId, reservation, selectedRooms)
-                : ReservationsAccess.SaveGuestReservation(user, reservation, selectedRooms);
-        }
-        catch (Exception)
-        {
-            errors.Add(ReservationConfirmationErrors.ReservationSaveFailed);
-            return (null, errors);
-        }
-        return (reservation, errors);
+
+        reservation.ReservationId = useExistingUser
+            ? ReservationsAccess.SaveReservationForUser(user.UserId, reservation, selectedRooms)
+            : ReservationsAccess.SaveGuestReservation(user, reservation, selectedRooms);
+
+        return reservation;
     }
+
     private string GenerateReservationCode()
     {
         const string characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -218,7 +226,6 @@ public class ReservationLogic
         do
         {
             code = "";
-
             for (int i = 0; i < 6; i++)
                 code += characters[Random.Shared.Next(characters.Length)];
         } while (ReservationsAccess.ReservationCodeExists(code));
@@ -226,4 +233,3 @@ public class ReservationLogic
         return code;
     }
 }
-

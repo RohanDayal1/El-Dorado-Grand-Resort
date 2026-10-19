@@ -3,36 +3,60 @@ public static class GuestDetailsMenu
     public static UserModel? ReadGuestDetails(DateTime today)
     {
         ConsoleHelper.ShowHeader("GUEST DETAILS");
-        var logic = new ReservationLogic();
+        var user = new UserModel();
 
-        while (true)
+        do
         {
             string? firstName = ReservationInput.ReadText("First name: ");
             if (firstName == null) return null;
+            user.FirstName = firstName;
+        } while (ShowFieldErrors(user, today, GuestDetailsErrors.FirstNameRequired));
+
+        do
+        {
             string? lastName = ReservationInput.ReadText("Last name: ");
             if (lastName == null) return null;
+            user.LastName = lastName;
+        } while (ShowFieldErrors(user, today, GuestDetailsErrors.LastNameRequired));
+
+        do
+        {
             string? email = ReservationInput.ReadText("Email: ");
             if (email == null) return null;
+            user.Email = email;
+        } while (ShowFieldErrors(user, today, GuestDetailsErrors.InvalidEmail));
+
+        do
+        {
             string? phone = ReservationInput.ReadText("Phone: ");
             if (phone == null) return null;
+            user.Phone = phone;
+        } while (ShowFieldErrors(user, today, GuestDetailsErrors.PhoneRequired));
+
+        do
+        {
             DateTime? birthDate = ReservationInput.ReadDate("Date of birth (yyyy-MM-dd): ");
             if (birthDate == null) return null;
+            user.DateOfBirth = birthDate.Value;
+        } while (ShowFieldErrors(user, today, GuestDetailsErrors.DateOfBirthRequired,
+            GuestDetailsErrors.DateOfBirthInFuture, GuestDetailsErrors.BookerUnder18));
 
-            var user = new UserModel
-            {
-                FirstName = firstName,
-                LastName = lastName,
-                Email = email,
-                Phone = phone,
-                DateOfBirth = birthDate.Value
-            };
-            var errors = logic.ValidateGuestDetails(user, today);
-            if (errors.Count == 0)
-                return user;
+        return user;
+    }
 
-            ShowGuestDetailsErrors(errors);
-            Console.WriteLine("  Please enter your details again, or q to cancel.\n");
+    private static bool ShowFieldErrors(UserModel user, DateTime today,
+        params GuestDetailsErrors[] fieldErrors)
+    {
+        var errors = new ReservationLogic().ValidateGuestDetails(user, today);
+        var currentFieldErrors = new List<GuestDetailsErrors>();
+        foreach (var error in errors)
+        {
+            if (fieldErrors.Contains(error))
+                currentFieldErrors.Add(error);
         }
+
+        ShowGuestDetailsErrors(currentFieldErrors);
+        return currentFieldErrors.Count > 0;
     }
 
     private static void ShowGuestDetailsErrors(List<GuestDetailsErrors> errors)
