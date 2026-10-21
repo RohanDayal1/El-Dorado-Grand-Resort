@@ -37,7 +37,7 @@ public class ReservationLogic
         List<RoomTypeModel> roomTypes
     )
     {
-        var (selectedTypes, errors) = GetSelectedRoomTypes(
+        var errors = ValidateSelectedRoomData(
             selectedRooms,
             availableRooms,
             roomTypes
@@ -45,6 +45,7 @@ public class ReservationLogic
         if (errors.Count > 0)
             return errors;
 
+        var selectedTypes = GetSelectedRoomTypes(selectedRooms, availableRooms, roomTypes);
         int totalCapacity = CalculateTotalCapacity(selectedTypes);
         return ReservationValidator.ValidateRoomSelection(
             adults,
@@ -69,48 +70,46 @@ public class ReservationLogic
         return roomType.PricePerNight * nights;
     }
 
-    public (decimal TotalCost, List<RoomSelectionErrors> Errors) CalculateTotalCost(
+    public decimal CalculateTotalCost(
         DateTime checkInDate,
         DateTime checkOutDate,
-        List<ReservationRoomModel> selectedRooms,
-        List<RoomModel> availableRooms,
-        List<RoomTypeModel> roomTypes
+        List<RoomTypeModel> selectedRoomTypes
     )
     {
-        var (selectedTypes, errors) = GetSelectedRoomTypes(
-            selectedRooms,
-            availableRooms,
-            roomTypes
-        );
-        if (errors.Count > 0)
-            return (0m, errors);
-
-        decimal totalCost = selectedTypes.Sum(type =>
-            CalculateRoomCost(type, checkInDate, checkOutDate)
-        );
-        return (totalCost, errors);
+        decimal totalCost = 0m;
+        foreach (var type in selectedRoomTypes)
+        {
+            totalCost += CalculateRoomCost(type, checkInDate, checkOutDate);
+        }
+        return totalCost;
     }
 
-    private (List<RoomTypeModel> RoomTypes, List<RoomSelectionErrors> Errors) GetSelectedRoomTypes(
+    public List<RoomSelectionErrors> ValidateSelectedRoomData(
         List<ReservationRoomModel> selectedRooms,
         List<RoomModel> availableRooms,
         List<RoomTypeModel> roomTypes
     )
     {
-        var errors = ReservationValidator.ValidateSelectedRoomData(
+        return ReservationValidator.ValidateSelectedRoomData(
             selectedRooms,
             availableRooms,
             roomTypes
         );
-        if (errors.Count > 0)
-            return (new List<RoomTypeModel>(), errors);
+    }
 
-        var selectedTypes = selectedRooms
-            .Select(selected => availableRooms.First(room => room.RoomId == selected.RoomId))
-            .Select(room => roomTypes.First(type => type.Room_Type_Id == room.Room_Type_Id))
-            .ToList();
-
-        return (selectedTypes, errors);
+    public List<RoomTypeModel> GetSelectedRoomTypes(
+        List<ReservationRoomModel> selectedRooms,
+        List<RoomModel> availableRooms,
+        List<RoomTypeModel> roomTypes)
+    {
+        var selectedTypes = new List<RoomTypeModel>();
+        foreach (var selected in selectedRooms)
+        {
+            var room = availableRooms.First(room => room.RoomId == selected.RoomId);
+            var type = roomTypes.First(type => type.Room_Type_Id == room.Room_Type_Id);
+            selectedTypes.Add(type);
+        }
+        return selectedTypes;
     }
 
     public ReservationModel ConfirmGuestReservation(
@@ -194,12 +193,11 @@ public class ReservationLogic
         if (!isValid)
             throw new InvalidOperationException("The reservation data is not valid.");
 
-        var cost = CalculateTotalCost(
+        var selectedTypes = GetSelectedRoomTypes(selectedRooms, availableRooms, roomTypes);
+        decimal cost = CalculateTotalCost(
             checkInDate,
             checkOutDate,
-            selectedRooms,
-            availableRooms,
-            roomTypes
+            selectedTypes
         );
 
         var reservation = new ReservationModel
@@ -207,7 +205,9 @@ public class ReservationLogic
             ReservationCode = GenerateReservationCode(),
             CheckInDate = checkInDate.Date,
             CheckOutDate = checkOutDate.Date,
-            TotalCost = cost.TotalCost,
+            Adults = adults,
+            Children = children,
+            TotalCost = cost,
             Status = "confirmed",
         };
 

@@ -6,6 +6,7 @@ public static class RoomSelectionMenu
         var roomsLogic = new RoomsLogic();
         var reservationLogic = new ReservationLogic();
         var selection = new RoomSelectionModel();
+
         selection.AvailableRooms = roomsLogic.GetAvailableRooms(checkInDate, checkOutDate);
         selection.RoomTypes = roomsLogic.GetAvailableRoomTypes(
             selection.AvailableRooms, selection.SelectedRooms, preferredBedType);
@@ -21,19 +22,22 @@ public static class RoomSelectionMenu
         {
             ConsoleHelper.ShowHeader("SELECT YOUR ROOMS");
             Console.WriteLine($"  Stay: {checkInDate:yyyy-MM-dd} to {checkOutDate:yyyy-MM-dd}");
-            var cost = reservationLogic.CalculateTotalCost(checkInDate, checkOutDate,
+            var dataErrors = reservationLogic.ValidateSelectedRoomData(
                 selection.SelectedRooms, selection.AvailableRooms, selection.RoomTypes);
-            if (cost.Errors.Count > 0)
+            if (dataErrors.Count > 0)
             {
-                ShowSelectionErrors(cost.Errors);
+                ShowSelectionErrors(dataErrors);
                 ConsoleHelper.WaitForEnter();
                 return null;
             }
 
-            int capacity = GetSelectedCapacity(selection);
+            var selectedTypes = reservationLogic.GetSelectedRoomTypes(
+                selection.SelectedRooms, selection.AvailableRooms, selection.RoomTypes);
+            var capacity = reservationLogic.CalculateTotalCapacity(selectedTypes);
+            var cost = reservationLogic.CalculateTotalCost(checkInDate, checkOutDate, selectedTypes);
             Console.WriteLine($"\n  Party: {adults} adults, {children} children");
             string action = ReadSelectionAction(selection.SelectedRooms, selection.AvailableRooms,
-                selection.RoomTypes, capacity, cost.TotalCost);
+                selection.RoomTypes, capacity, cost);
 
             switch (action)
             {
@@ -79,7 +83,7 @@ public static class RoomSelectionMenu
         ShowAvailableRoomTypes(choices, selection.AvailableRooms, selection.SelectedRooms);
         RoomTypeModel? type = ReadRoomType(choices);
         if (type == null) return false;
-        int availableQuantity = logic.GetAvailableQuantity(type, selection.AvailableRooms, selection.SelectedRooms);
+        var availableQuantity = logic.GetAvailableQuantity(type, selection.AvailableRooms, selection.SelectedRooms);
         int? quantity = ReadRoomQuantity(type, availableQuantity);
         if (quantity == null) return false;
 
@@ -95,17 +99,6 @@ public static class RoomSelectionMenu
         return true;
     }
 
-    private static int GetSelectedCapacity(RoomSelectionModel selection)
-    {
-        var types = new List<RoomTypeModel>();
-        foreach (var selected in selection.SelectedRooms)
-        {
-            var room = selection.AvailableRooms.First(room => room.RoomId == selected.RoomId);
-            var type = selection.RoomTypes.First(type => type.Room_Type_Id == room.Room_Type_Id);
-            types.Add(type);
-        }
-        return new ReservationLogic().CalculateTotalCapacity(types);
-    }
     private static void ShowAvailableRoomTypes(List<RoomTypeModel> roomTypes,
         List<RoomModel> availableRooms, List<ReservationRoomModel> selectedRooms)
     {
@@ -148,7 +141,7 @@ public static class RoomSelectionMenu
         }
     }
 
-    private static string ReadSelectionAction(List<ReservationRoomModel> selectedRooms,
+    private static string? ReadSelectionAction(List<ReservationRoomModel> selectedRooms,
         List<RoomModel> availableRooms, List<RoomTypeModel> roomTypes,
         int totalCapacity, decimal totalCost)
     {
@@ -164,7 +157,7 @@ public static class RoomSelectionMenu
         }
         Console.WriteLine($"  Rooms: {selectedRooms.Count} | Combined capacity: {totalCapacity} | Total: {totalCost:C}");
         Console.WriteLine("  [1] Add rooms  [2] Remove a room  [3] Continue  [q] Cancel");
-        return ReservationInput.ReadText("Select an option: ")?.ToLowerInvariant() ?? "q";
+        return ReservationInput.ReadText("Select an option: ");
     }
 
     private static bool RemoveSelectedRoom(List<ReservationRoomModel> selectedRooms,
@@ -203,25 +196,26 @@ public static class RoomSelectionMenu
         DateTime checkInDate, DateTime checkOutDate)
     {
         var logic = new ReservationLogic();
+        var errors = logic.ValidateSelectedRoomData(selectedRooms, availableRooms, roomTypes);
+        if (errors.Count > 0)
+        {
+            ShowSelectionErrors(errors);
+            return;
+        }
+        var selectedTypes = logic.GetSelectedRoomTypes(selectedRooms, availableRooms, roomTypes);
         foreach (var type in roomTypes)
         {
-            var roomsOfType = new List<ReservationRoomModel>();
-            foreach (var selected in selectedRooms)
+            var roomsOfType = new List<RoomTypeModel>();
+            foreach (var selectedType in selectedTypes)
             {
-                var room = availableRooms.First(room => room.RoomId == selected.RoomId);
-                if (room.Room_Type_Id == type.Room_Type_Id)
-                    roomsOfType.Add(selected);
+                if (selectedType.Room_Type_Id == type.Room_Type_Id)
+                    roomsOfType.Add(selectedType);
             }
             if (roomsOfType.Count == 0) continue;
-            var cost = logic.CalculateTotalCost(checkInDate, checkOutDate, roomsOfType, availableRooms, roomTypes);
-            if (cost.Errors.Count > 0)
-                ShowSelectionErrors(cost.Errors);
-            else
-            {
-                decimal roomCost = logic.CalculateRoomCost(type, checkInDate, checkOutDate);
-                Console.WriteLine($"  {roomsOfType.Count} x {type.Name} | Per room/night: {type.PricePerNight:C}");
-                Console.WriteLine($"      Per room/stay: {roomCost:C} | All {type.Name} rooms: {cost.TotalCost:C}");
-            }
+            decimal cost = logic.CalculateTotalCost(checkInDate, checkOutDate, roomsOfType);
+            decimal roomCost = logic.CalculateRoomCost(type, checkInDate, checkOutDate);
+            Console.WriteLine($"  {roomsOfType.Count} x {type.Name} | Per room/night: {type.PricePerNight:C}");
+            Console.WriteLine($"      Per room/stay: {roomCost:C} | All {type.Name} rooms: {cost:C}");
         }
     }
 

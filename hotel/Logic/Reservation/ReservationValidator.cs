@@ -42,24 +42,24 @@ public static class ReservationValidator
     {
         var errors = new List<RoomSelectionErrors>();
 
-        if (selectedRooms.GroupBy(room => room.RoomId).Any(group => group.Count() > 1))
+        var selectedIds = selectedRooms
+        .Select(selected => selected.RoomId)
+        .ToList();
+        
+        var availableIds = availableRooms
+        .Select(room => room.RoomId)
+        .ToList();
+
+        if (selectedIds.Distinct().Count() != selectedIds.Count)
             errors.Add(RoomSelectionErrors.DuplicateRoom);
 
-        if (
-            selectedRooms.Any(selected =>
-                !availableRooms.Any(room => room.RoomId == selected.RoomId)
-            )
-        )
+        if (selectedIds.Any(id => !availableIds.Contains(id)))
             errors.Add(RoomSelectionErrors.RoomUnavailable);
 
-        if (
-            selectedRooms.Any(selected =>
-            {
-                var room = availableRooms.FirstOrDefault(room => room.RoomId == selected.RoomId);
-                return room != null
-                    && !roomTypes.Any(type => type.Room_Type_Id == room.Room_Type_Id);
-            })
-        )
+        var typeIds = roomTypes.Select(type => type.Room_Type_Id).ToList();
+        var selectedRoomModels = availableRooms.Where(room => selectedIds.Contains(room.RoomId));
+
+        if (selectedRoomModels.Any(room => !typeIds.Contains(room.Room_Type_Id)))
             errors.Add(RoomSelectionErrors.RoomTypeNotFound);
 
         return errors;

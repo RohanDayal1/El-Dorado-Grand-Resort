@@ -107,20 +107,23 @@ public static class ReservationMenu
             return;
 
         var rooms = selection;
-        var cost = logic.CalculateTotalCost(
-            dates.Value.CheckInDate,
-            dates.Value.CheckOutDate,
+        var errors = logic.ValidateSelectedRoomData(
             rooms.SelectedRooms,
             rooms.AvailableRooms,
             rooms.RoomTypes
         );
-        if (cost.Errors.Count > 0)
+        if (errors.Count > 0)
         {
-            foreach (var error in cost.Errors)
+            foreach (var error in errors)
                 Console.WriteLine($"  {GetRoomSelectionMessage(error)}");
             ConsoleHelper.WaitForEnter();
             return;
         }
+
+        var selectedTypes = logic.GetSelectedRoomTypes(
+            rooms.SelectedRooms, rooms.AvailableRooms, rooms.RoomTypes);
+        decimal cost = logic.CalculateTotalCost(
+            dates.Value.CheckInDate, dates.Value.CheckOutDate, selectedTypes);
 
         var draft = new ReservationModel
         {
@@ -128,7 +131,7 @@ public static class ReservationMenu
             CheckOutDate = dates.Value.CheckOutDate,
             Adults = counts.Value.Adults,
             Children = counts.Value.Children,
-            TotalCost = cost.TotalCost,
+            TotalCost = cost,
         };
         if (!ShowReview(user, draft, rooms.SelectedRooms, rooms.AvailableRooms, rooms.RoomTypes))
         {
@@ -215,7 +218,7 @@ public static class ReservationMenu
         ConsoleHelper.ShowHeader("BED PREFERENCE");
         var beds = roomTypes
             .Where(type => !string.IsNullOrWhiteSpace(type.BedType))
-            .Select(type => type.BedType!)
+            .Select(type => type.BedType)
             .Distinct()
             .ToList();
         Console.WriteLine("\n  BED PREFERENCE (optional)");

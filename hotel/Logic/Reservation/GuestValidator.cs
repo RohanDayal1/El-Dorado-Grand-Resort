@@ -7,8 +7,14 @@ public static class GuestValidator
         if (string.IsNullOrWhiteSpace(user.FirstName))
             errors.Add(GuestDetailsErrors.FirstNameRequired);
 
+        if (!string.IsNullOrWhiteSpace(user.FirstName) && !IsValidName(user.FirstName))
+            errors.Add(GuestDetailsErrors.FirstNameInvalid);
+
         if (string.IsNullOrWhiteSpace(user.LastName))
             errors.Add(GuestDetailsErrors.LastNameRequired);
+
+        if (!string.IsNullOrWhiteSpace(user.LastName) && !IsValidName(user.LastName))
+            errors.Add(GuestDetailsErrors.LastNameInvalid);
 
         if (!System.Net.Mail.MailAddress.TryCreate(user.Email, out var email) || email.Address != user.Email)
             errors.Add(GuestDetailsErrors.InvalidEmail);
@@ -27,6 +33,20 @@ public static class GuestValidator
             errors.Add(GuestDetailsErrors.BookerUnder18);
 
         return errors;
+    }
+
+    private static bool IsValidName(string name)
+    {
+        if (name.Length < 2 || name.Length > 40)
+            return false;
+
+        foreach (var c in name)
+        {
+            if (!char.IsLetter(c))
+                return false;
+        }
+
+        return true;
     }
 
     public static List<GuestCountErrors> ValidateGuestCount(int adults, int children)
