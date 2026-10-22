@@ -45,21 +45,43 @@ public static class AdminAccess
         }
     }
 
+    public static void ViewReservation()
+    {
+        Console.Write("Reservation ID: ");
+        string? id = Console.ReadLine();
+        if (!int.TryParse(id, out int rID))
+        {
+            Console.WriteLine("invalid id");
+            return;
+        }
+        ReservationModel? reservation = GetReservation(rID);
+        if (reservation == null)
+        {
+            Console.WriteLine("Reservation doesn't exist");
+            return;
+        }
+        Console.WriteLine($" ReservationId: {reservation.ReservationId}");
+        Console.WriteLine($" Reservation Code: {reservation.ReservationCode}");
+        Console.WriteLine($" UserId: {reservation.UserId}");
+        Console.WriteLine($" Check in date {reservation.CheckInDate:yyyy-MM-dd}");
+        Console.WriteLine($" Check out date {reservation.CheckOutDate:yyyy-MM-dd}");
+        Console.WriteLine($" Total Cost: {reservation.TotalCost}");
+        Console.WriteLine($" Status: {reservation.Status}");
+    }
+
     public static void EditReservation()
     {
         Console.Write("Reservation ID: ");
         string? id = Console.ReadLine();
 
         ReservationModel? currentReservation = null;
-        if (int.TryParse(id, out int reservationId))
-        {
-            currentReservation = GetReservation(reservationId);
-        }
-        else
+        if (!int.TryParse(id, out int reservationId))
         {
             Console.WriteLine("not a valid number!");
             return;
         }
+        currentReservation = GetReservation(reservationId);
+
         if (currentReservation == null)
         {
             Console.WriteLine("reservation doesn't exist");
@@ -133,8 +155,14 @@ public static class AdminAccess
         }
     }
 
-    public static void CancelReservation(int reservationid)
+    public static void CancelReservation()
     {
+        Console.Write("Reservation Id: ");
+        string? id = Console.ReadLine();
+        if (!int.TryParse(id, out int reservationid))
+        {
+            Console.WriteLine("not a valid id");
+        }
         ReservationModel? reservation = GetReservation(reservationid);
         if (reservation == null)
         {
@@ -150,7 +178,7 @@ public static class AdminAccess
         using var connection = DatabaseInitializer.Connect();
         connection.Open();
         const string sql = @"UPDATE Reservation SET Status = 'cancelled' WHERE Reservation_Id = @ReservationId";
-        connection.Execute(sql, new {ReservationId = reservationid});
+        connection.Execute(sql, new {ReservationId = id});
 
         Console.WriteLine("Reservation cancelled");
     }
@@ -169,7 +197,6 @@ public static class AdminAccess
                             Status
                             FROM Reservation
                             WHERE Reservation_Id = @reservationid";
-
         ReservationModel? reservation = connection.QueryFirstOrDefault<ReservationModel>(sql, new {reservationid = id});
         return reservation;
     }
@@ -183,7 +210,6 @@ public static class AdminAccess
                     SET CheckInDate = @CheckInDate, 
                     CheckOutDate = @CheckOutDate
                     WHERE Reservation_Id = @ReservationId";
-
         connection.Execute(sql, 
         new
         {
@@ -208,7 +234,6 @@ public static class AdminAccess
     {
         using var connection = DatabaseInitializer.Connect();
         connection.Open();
-
         const string sql = @"SELECT Reservation.Reservation_Id AS ReservationId, 
                             Reservation.CheckInDate, 
                             Reservation.CheckOutDate, 
