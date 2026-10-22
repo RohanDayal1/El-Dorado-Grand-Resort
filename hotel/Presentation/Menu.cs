@@ -12,6 +12,8 @@ public static class Menu
 			ShowHomePage(signedInAccount);
 
 			string? choice = Console.ReadLine()?.Trim();
+			if (choice == null)
+				return;
 
 			switch (choice)
 			{
@@ -70,6 +72,7 @@ public static class Menu
 					{
 						Console.WriteLine($"\n  You have been logged out, {signedInAccount.FirstName} {signedInAccount.LastName}.");
 						signedInAccount = null;
+						new AccountsLogic().Logout();
 					}
 					break;
 				case "6":
@@ -81,6 +84,9 @@ public static class Menu
 					{
 						ReservationMenu.ShowReservations(signedInAccount);
 					}
+					break;
+				case "7":
+					ReservationMenu.Start(signedInAccount);
 					break;
 				case "0":
 					Console.WriteLine("\nThank you for visiting El Dorado Grand Resort. See you soon!");
@@ -95,7 +101,7 @@ public static class Menu
 
 	private static void ShowHomePage(AccountModel? signedInAccount)
 	{
-		Console.Clear();
+		ConsoleHelper.ClearScreen();
 		Console.WriteLine(Border);
 		Console.WriteLine("                 EL DORADO GRAND RESORT");
 		Console.WriteLine("                 Your comfort, our pleasure");
@@ -114,6 +120,9 @@ public static class Menu
 		{
 			Console.WriteLine("  [6] View my reservations");
 		}
+		Console.WriteLine(signedInAccount == null
+			? "  [7] Make a reservation (guest checkout)"
+			: "  [7] Make a reservation");
 		Console.WriteLine("  [0] Exit");
 		Console.WriteLine();
 		Console.Write("  Select an option: ");
@@ -121,7 +130,7 @@ public static class Menu
 
 	private static void ShowPage(string title, string[] lines)
 	{
-		Console.Clear();
+		ConsoleHelper.ClearScreen();
 		Console.WriteLine(Border);
 		Console.WriteLine($"  EL DORADO GRAND RESORT  |  {title}");
 		Console.WriteLine(Border);
@@ -140,7 +149,7 @@ public static class Menu
 
 	private static AccountModel? Login()
 	{
-		Console.Clear();
+		ConsoleHelper.ClearScreen();
 		Console.WriteLine(Border);
 		Console.WriteLine("  EL DORADO GRAND RESORT  |  LOGIN");
 		Console.WriteLine(Border);
@@ -171,7 +180,7 @@ public static class Menu
 
 	private static void ShowMemberHome(AccountModel account)
 	{
-		Console.Clear();
+		ConsoleHelper.ClearScreen();
 		Console.WriteLine(Border);
 		Console.WriteLine("  EL DORADO GRAND RESORT  |  YOUR HOME");
 		Console.WriteLine(Border);
@@ -192,7 +201,7 @@ public static class Menu
 
 	private static void Register()
 	{
-		Console.Clear();
+		ConsoleHelper.ClearScreen();
 		Console.WriteLine(Border);
 		Console.WriteLine("  EL DORADO GRAND RESORT  |  REGISTER");
 		Console.WriteLine(Border);
