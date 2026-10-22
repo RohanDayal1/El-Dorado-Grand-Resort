@@ -1,4 +1,4 @@
-﻿public class AccountModel
+public class AccountModel
 {
     public int Id { get; set; }
     public int UserId { get; set; }
@@ -20,8 +20,7 @@
         UserId = userId;
         Password = password;
         Role = role;
-    }
- 
+    } 
     public AccountModel() { }
- 
+
 }

@@ -1,23 +1,54 @@
-static class UserLogin
+public static class UserLogin
 {
-    // private static BooksLogic _accountsLogic = new();
+    private static UserLogic _userlogic = new();
+    public static void Register()
+    {
+        Console.WriteLine("Name:");
+        string name = Console.ReadLine();
 
-    // public static void Start()
-    // {
-    //     Console.WriteLine("Welcome to the login page");
-    //     Console.WriteLine("Please enter your email address");
-    //     string email = Console.ReadLine()!;
-    //     Console.WriteLine("Please enter your password");
-    //     string password = Console.ReadLine()!;
+        Console.WriteLine("\nLast Name:");
+        string lastName = Console.ReadLine();
 
-    //     AccountModel acc = _accountsLogic.CheckLogin(email, password);
+        Console.WriteLine("\nBirth Date:");
+        string birthDate = Console.ReadLine();
 
-    //     if (acc == null)
-    //     {
-    //         Console.WriteLine("No account found with that email and password");
-    //         return;
-    //     }
-    //     Console.WriteLine("Welcome back " + acc.FullName);
-    //     Console.WriteLine("Your email number is " + acc.EmailAddress);
-    // }
+        Console.WriteLine("\nEmail:");
+        string mail = Console.ReadLine();
+
+        Console.WriteLine("\nPhone Number:");
+        string phoneNumber = Console.ReadLine();
+
+        RegisterEnum result = _userlogic.Register(name, lastName, birthDate, mail, phoneNumber);
+
+        switch (result)
+        {
+            case RegisterEnum.Success:
+                Console.WriteLine("\nInformation saved");
+                break;
+
+            case RegisterEnum.InvalidName:
+                Console.WriteLine("\nName is invalid");
+                break;
+            
+            case RegisterEnum.InvalidLastName:
+                Console.WriteLine("\nLast name is invalid");
+                break;
+
+            case RegisterEnum.InvalidEmail:
+                Console.WriteLine("\nE-mail is invalid");
+                break;
+
+            case RegisterEnum.EmailAlreadyExists:
+                Console.WriteLine("\nThis email is already registered");
+                break;
+
+            case RegisterEnum.InvalidBirthDate:
+                Console.WriteLine("\nInvalid Birthdate");
+                break;
+
+            case RegisterEnum.InvalidPhoneNumber:
+                Console.WriteLine("\nInvalid phone number");
+                break;
+        }
+    }
 }
