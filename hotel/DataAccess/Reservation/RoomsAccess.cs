@@ -5,18 +5,24 @@ public static class RoomsAccess
     public static List<RoomTypeModel> GetRoomTypes()
     {
         using var connection = DatabaseInitializer.Connect();
-        const string sql = @"
+
+        return connection
+            .Query<RoomTypeModel>(
+                @"
             SELECT Room_Type_Id, Name, Description,
                    Capacity, PricePerNight, BedType
-            FROM Room_Type;";
-
-        return connection.Query<RoomTypeModel>(sql).ToList();
+            FROM Room_Type;"
+            )
+            .ToList();
     }
 
     public static List<RoomModel> GetAvailableRooms(DateTime checkInDate, DateTime checkOutDate)
     {
         using var connection = DatabaseInitializer.Connect();
-        const string sql = @"
+
+        return connection
+            .Query<RoomModel>(
+                @"
             SELECT Room_Id AS RoomId, Room_Type_Id, RoomNumber
             FROM Room
             WHERE Room_Id NOT IN (
@@ -27,12 +33,13 @@ public static class RoomsAccess
                   AND r.CheckInDate < @CheckOut
                   AND r.CheckOutDate > @CheckIn
             )
-            ORDER BY RoomNumber;";
-
-        return connection.Query<RoomModel>(sql, new
-        {
-            CheckIn = checkInDate.ToString("yyyy-MM-dd"),
-            CheckOut = checkOutDate.ToString("yyyy-MM-dd")
-        }).ToList();
+            ORDER BY RoomNumber;",
+                new
+                {
+                    CheckIn = checkInDate.ToString("yyyy-MM-dd"),
+                    CheckOut = checkOutDate.ToString("yyyy-MM-dd"),
+                }
+            )
+            .ToList();
     }
 }

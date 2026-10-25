@@ -1,12 +1,12 @@
 using Dapper;
 using Microsoft.Data.Sqlite;
 
-public class DatabaseInitializer
+public static class DatabaseInitializer
 {
-    private static readonly string ConnectionString = $"Data Source={Path.Combine(AppContext.BaseDirectory, "DataSources", "el_dorado.db")};Foreign Keys=True";
+    private const string ConnectionString = "Data Source=DataSources/el_dorado.db";
     public static SqliteConnection Connect() => new SqliteConnection(ConnectionString);
 
-    public void ResetDatabase()
+    public static void ResetDatabase()
     {
         using var connection = new SqliteConnection(ConnectionString);
         connection.Open();
@@ -64,6 +64,8 @@ public class DatabaseInitializer
                 User_Id INTEGER NOT NULL,
                 CheckInDate TEXT NOT NULL,
                 CheckOutDate TEXT NOT NULL,
+                Adults INTEGER NOT NULL CHECK (Adults >= 1),
+                Children INTEGER NOT NULL CHECK (Children >= 0),
                 TotalCost REAL NOT NULL DEFAULT 0,
                 Status TEXT NOT NULL DEFAULT 'confirmed'
                     CHECK (Status IN ('confirmed','cancelled')),
@@ -74,8 +76,6 @@ public class DatabaseInitializer
             CREATE TABLE Reservation_Room (
                 Reservation_Id INTEGER NOT NULL,
                 Room_Id INTEGER NOT NULL,
-                Adults INTEGER NOT NULL DEFAULT 1 CHECK (Adults >= 1),
-                Children INTEGER NOT NULL DEFAULT 0 CHECK (Children >= 0),
                 PRIMARY KEY (Reservation_Id, Room_Id),
                 FOREIGN KEY (Reservation_Id) REFERENCES Reservation(Reservation_Id) ON DELETE CASCADE,
                 FOREIGN KEY (Room_Id) REFERENCES Room(Room_Id) ON DELETE RESTRICT
@@ -157,18 +157,14 @@ public class DatabaseInitializer
                 (1, 1, 101), (2, 1, 102), (3, 2, 201), (4, 2, 202),
                 (5, 3, 301), (6, 3, 302), (7, 4, 401), (8, 4, 402);
 
-            INSERT INTO Reservation (Reservation_Id, ReservationCode, User_Id, CheckInDate, CheckOutDate, TotalCost, Status) VALUES
-                (1, 'K7M2QX', 2, '2026-11-01', '2026-11-04', 300.00, 'confirmed'),
-                (2, 'P4TW9B', 3, '2026-11-10', '2026-11-12', 400.00, 'confirmed'),
-                (3, 'H8ZN3C', 4, '2026-12-01', '2026-12-03', 500.00, 'cancelled'),
-                (4, 'R2VD6L', 7, '2026-11-15', '2026-11-18', 600.00, 'confirmed');
+            INSERT INTO Reservation (Reservation_Id, ReservationCode, User_Id, CheckInDate, CheckOutDate, Adults, Children, TotalCost, Status) VALUES
+                (1, 'K7M2QX', 2, '2026-11-01', '2026-11-04', 2, 0, 300.00, 'confirmed'),
+                (2, 'P4TW9B', 3, '2026-11-10', '2026-11-12', 2, 2, 400.00, 'confirmed'),
+                (3, 'H8ZN3C', 4, '2026-12-01', '2026-12-03', 3, 0, 500.00, 'cancelled'),
+                (4, 'R2VD6L', 7, '2026-11-15', '2026-11-18', 2, 0, 600.00, 'confirmed');
 
-            INSERT INTO Reservation_Room (Reservation_Id, Room_Id, Adults, Children) VALUES
-                (1, 1, 2, 0),
-                (2, 5, 2, 2),
-                (3, 2, 1, 0),
-                (3, 3, 2, 0),
-                (4, 6, 2, 0);
+            INSERT INTO Reservation_Room (Reservation_Id, Room_Id) VALUES
+                (1, 1), (2, 5), (3, 2), (3, 3), (4, 6);
 
             INSERT INTO Facility (Facility_Id, Name, Description, OpeningHours, ClosingHours, Location) VALUES
                 (1, 'Swimming Pool', 'Indoor heated swimming pool', '07:00', '22:00', 'Ground floor'),

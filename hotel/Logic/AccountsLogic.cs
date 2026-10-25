@@ -12,6 +12,18 @@ public class AccountsLogic
 
     }
 
+    public UserModel? GetGuestDetails(AccountModel account)
+    {
+        if (CurrentAccount == null || CurrentAccount.Id != account.Id)
+            return null;
+        return AccountsAccess.GetUserByAccountId(CurrentAccount.Id);
+    }
+
+    public void Logout()
+    {
+        CurrentAccount = null;
+    }
+
     public AccountModel? CheckLogin(string email, string password)
     {
         AccountModel? account = AccountsAccess.GetByEmail(email);

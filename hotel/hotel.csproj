@@ -14,10 +14,4 @@
     <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.2" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="DataSources/el_dorado.db">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>
