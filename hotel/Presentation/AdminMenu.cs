@@ -16,10 +16,10 @@ public static class AdminMenu
             switch (choice)
             {
                 case "1":
-                    AdminAccess.ViewAllGuest();
+                    ShowAllGuests();
                     break;
                 case "2":
-                    AdminAccess.ViewAllReservation();
+                    ShowAllReservation();
                     break;
                 case "3":
                     Console.Write("Reservation ID: ");
@@ -48,10 +48,10 @@ public static class AdminMenu
                     }
                     break;
                 case "4":
-                    AdminAccess.EditReservation();
+                    ShowEditReservation();
                     break;
                 case "5":
-                    AdminAccess.CancelReservation();
+                    ShowCancelReservation();
                     break;
                 case "0":
                     viewadminmenu = false;
@@ -76,6 +76,79 @@ public static class AdminMenu
         Console.WriteLine("[4] Edit an existing reservation");
         Console.WriteLine("[5] Cancel an existing reservation");
         Console.WriteLine("[0] Back");
+    }
+
+
+    public static void ShowAllGuests()
+    {
+        var allGuests = new AdminLogic().GetAllGuests();
+        foreach (var guest in allGuests)
+        {
+            Console.WriteLine(@$"Userid: {guest.UserId}, 
+            First name: {guest.FirstName}, 
+            Last name: {guest.LastName}, 
+            Email: {guest.Email}, 
+            Phone: {guest.Phone}, 
+            Date of birth: {guest.DateOfBirth:yyyy-MM-dd}");
+        }
+    }
+
+    public static void ShowAllReservation()
+    {
+        var allReservation = AdminAccess.GetAllReservation();
+        foreach (var reservation in allReservation)
+        {
+            Console.WriteLine(@$"Reservationid: {reservation.ReservationId}, 
+            Reservationcode: {reservation.ReservationCode}, 
+            UserId: {reservation.UserId}, 
+            CheckInDate: {reservation.CheckInDate:yyyy-MM-dd}, 
+            CheckOutDate: {reservation.CheckOutDate:yyyy-MM-dd}, 
+            TotalCost: {reservation.TotalCost}, 
+            Status: {reservation.Status}");
+        }
+    }
+
+    public static void ShowEditReservation()
+    {
+        Console.Write("Reservation ID: ");
+        string? id = Console.ReadLine();
+
+        if (!int.TryParse(id, out int reservationId))
+        {
+            Console.WriteLine("not a valid number!");
+            return;
+        }
+
+        Console.Write("New Check-in-Date: ");
+        string? checkInDate = Console.ReadLine();
+        if (!DateTime.TryParse(checkInDate, out DateTime newCheckInDate))
+        {
+            Console.WriteLine("not a valid date");
+            return;
+        }
+
+        Console.Write("New Check-Out-Date: ");
+        string? checkOutDate = Console.ReadLine();
+        if (!DateTime.TryParse(checkOutDate, out DateTime newCheckOutDate))
+        {
+            Console.WriteLine("not a valid date");
+            return;
+        }
+        
+        string result = new AdminLogic().EditReservation(reservationId, newCheckInDate, newCheckOutDate);
+        Console.WriteLine(result);
+    }
+
+    public static void ShowCancelReservation()
+    {
+        int? reservation = ReservationInput.ReadInt("Reservation ID: ");
+        if (reservation == null)
+        {
+            return;
+        }
+
+        string result = new AdminLogic().CancelReservation(reservation.Value);
+        Console.WriteLine(result);
     }
 
 }

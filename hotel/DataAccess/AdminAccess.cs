@@ -4,7 +4,7 @@ using System.Data;
 
 public static class AdminAccess
 {
-    public static void ViewAllGuest()
+    public static List<UserModel> GetAllGuest()
     {
         using var connection = DatabaseInitializer.Connect();
         connection.Open();
@@ -18,13 +18,10 @@ public static class AdminAccess
                         FROM User";
 
         List<UserModel> AllGuests = connection.Query<UserModel>(sql).ToList();
-        foreach (var guest in AllGuests)
-        {
-            Console.WriteLine(@$"Userid: {guest.UserId}, First name: {guest.FirstName}, Last name: {guest.LastName}, Email: {guest.Email}, Phone: {guest.Phone}, Date of birth: {guest.DateOfBirth:yyyy-MM-dd}");
-        }
+        return AllGuests;
     }
 
-    public static void ViewAllReservation()
+    public static List<ReservationModel> GetAllReservation()
     {
         using var connection = DatabaseInitializer.Connect();
         connection.Open();
@@ -39,10 +36,7 @@ public static class AdminAccess
                             FROM Reservation";
     
         List<ReservationModel> AllReservation = connection.Query<ReservationModel>(sql).ToList();
-        foreach (var reservation in AllReservation)
-        {
-            Console.WriteLine($"Reservationid: {reservation.ReservationId}, Reservationcode: {reservation.ReservationCode}, UserId: {reservation.UserId}, CheckInDate: {reservation.CheckInDate:yyyy-MM-dd}, CheckOutDate: {reservation.CheckOutDate:yyyy-MM-dd}, TotalCost: {reservation.TotalCost}, Status: {reservation.Status}");
-        }
+        return AllReservation;
     }
 
     public static void ViewReservation()
@@ -69,118 +63,12 @@ public static class AdminAccess
         Console.WriteLine($" Status: {reservation.Status}");
     }
 
-    public static void EditReservation()
+    public static void CancelReservation(int id)
     {
-        Console.Write("Reservation ID: ");
-        string? id = Console.ReadLine();
-
-        ReservationModel? currentReservation = null;
-        if (!int.TryParse(id, out int reservationId))
-        {
-            Console.WriteLine("not a valid number!");
-            return;
-        }
-        currentReservation = GetReservation(reservationId);
-
-        if (currentReservation == null)
-        {
-            Console.WriteLine("reservation doesn't exist");
-            return;
-        }
-
-        Console.Write("New Check-in-Date: ");
-        string? checkInDate = Console.ReadLine();
-        if (!DateTime.TryParse(checkInDate, out DateTime newCheckInDate))
-        {
-            Console.WriteLine("not a valid date");
-            return;
-        }
-
-        Console.Write("New Check-Out-Date: ");
-        string? checkOutDate = Console.ReadLine();
-        if (!DateTime.TryParse(checkOutDate, out DateTime newCheckOutDate))
-        {
-            Console.WriteLine("not a valid date");
-            return;
-        }
-
-        if (!(newCheckOutDate > newCheckInDate))
-        {
-            Console.WriteLine("invalid dates");
-            return;
-        }
-
-        Dictionary<int, int> RoomSwap = new();
-        List<int> ids = GetRooms(reservationId).ToList();
-        foreach (var roomId in ids)
-        {
-            bool foundOtherRoom = false;
-            
-            bool currentRoomisFree = IsRoomFree(roomId, newCheckInDate, newCheckOutDate, reservationId);
-            if (!currentRoomisFree)
-            {
-                List<int> otherRooms = GetRoomOfSameType(roomId).ToList();
-
-                foreach (int otherRoomId in otherRooms)
-                {
-                    if (ids.Contains(otherRoomId) || RoomSwap.ContainsValue(otherRoomId))
-                    {
-                        continue;
-                    }
-                    bool isOtherRoomFree = IsRoomFree(otherRoomId, newCheckInDate, newCheckOutDate, reservationId);
-                    if (isOtherRoomFree)
-                    {
-                        foundOtherRoom = true;
-                        RoomSwap.Add(roomId, otherRoomId);
-                        break;
-                    }
-                }
-                if (!foundOtherRoom)
-                {
-                    Console.WriteLine("Room isn't free");
-                    return;
-                }
-            }
-        }
-
-        currentReservation.CheckInDate = newCheckInDate;
-        currentReservation.CheckOutDate = newCheckOutDate;
-
-        Console.WriteLine($"{currentReservation.ReservationId} {currentReservation.ReservationCode} {currentReservation.CheckInDate:yyyy-MM-dd} {currentReservation.CheckOutDate:yyyy-MM-dd}");
-        UpdateReservationToDb(currentReservation);
-
-        foreach (KeyValuePair<int, int> pair in RoomSwap)
-        {
-            SwapRoom(reservationId, pair.Key, pair.Value);
-        }
-    }
-
-    public static void CancelReservation()
-    {
-        Console.Write("Reservation Id: ");
-        string? id = Console.ReadLine();
-        if (!int.TryParse(id, out int reservationid))
-        {
-            Console.WriteLine("not a valid id");
-        }
-        ReservationModel? reservation = GetReservation(reservationid);
-        if (reservation == null)
-        {
-            Console.WriteLine("Reservation doesn't exist");
-            return;
-        }
-        if (reservation.Status == "cancelled")
-        {
-            Console.WriteLine("Reservation is already cancelled");
-            return;
-        }
-
         using var connection = DatabaseInitializer.Connect();
         connection.Open();
         const string sql = @"UPDATE Reservation SET Status = 'cancelled' WHERE Reservation_Id = @ReservationId";
         connection.Execute(sql, new {ReservationId = id});
-
-        Console.WriteLine("Reservation cancelled");
     }
 
     public static ReservationModel? GetReservation(int id)
@@ -219,7 +107,7 @@ public static class AdminAccess
         });
     }
 
-    public static List<int> GetRooms(int id)
+    public static List<int> GetReservationRoomIds(int id)
     {
         using var connection = DatabaseInitializer.Connect();
         connection.Open();
