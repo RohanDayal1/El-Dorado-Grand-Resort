@@ -22,30 +22,7 @@ public static class AdminMenu
                     ShowAllReservation();
                     break;
                 case "3":
-                    Console.Write("Reservation ID: ");
-                    string? id = Console.ReadLine();
-                    if (int.TryParse(id, out int rID))
-                    {
-                        ReservationModel? reservation = AdminAccess.GetReservation(rID);
-                        if (reservation != null)
-                        {
-                            Console.WriteLine($"\n ReservationId: {reservation.ReservationId}");
-                            Console.WriteLine($" Reservation Code: {reservation.ReservationCode}");
-                            Console.WriteLine($" UserId: {reservation.UserId}");
-                            Console.WriteLine($" Check in date {reservation.CheckInDate:yyyy-MM-dd}");
-                            Console.WriteLine($" Check out date {reservation.CheckOutDate:yyyy-MM-dd}");
-                            Console.WriteLine($" Total Cost: {reservation.TotalCost}");
-                            Console.WriteLine($" Status: {reservation.Status}");
-                        }
-                        else
-                        {
-                            Console.WriteLine("Reservation doesn't exist");
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("invalid id");
-                    }
+                    ShowReservationDetails();
                     break;
                 case "4":
                     ShowEditReservation();
@@ -151,4 +128,29 @@ public static class AdminMenu
         Console.WriteLine(result);
     }
 
+    public static void ShowReservationDetails()
+    {
+        Console.Write("Reservation ID: ");
+        string? id = Console.ReadLine();
+        if (!int.TryParse(id, out int rID))
+        {
+            Console.WriteLine("invalid id");
+            return;
+        }
+
+        ReservationModel? reservation = new AdminLogic().GetReservation(rID);
+        if (reservation == null)
+        {
+            Console.WriteLine("Reservation doesn't exist");
+            return;
+        }
+
+        Console.WriteLine($"\n ReservationId: {reservation.ReservationId}");
+        Console.WriteLine($" Reservation Code: {reservation.ReservationCode}");
+        Console.WriteLine($" UserId: {reservation.UserId}");
+        Console.WriteLine($" Check in date {reservation.CheckInDate:yyyy-MM-dd}");
+        Console.WriteLine($" Check out date {reservation.CheckOutDate:yyyy-MM-dd}");
+        Console.WriteLine($" Total Cost: {reservation.TotalCost}");
+        Console.WriteLine($" Status: {reservation.Status}");
+    }
 }

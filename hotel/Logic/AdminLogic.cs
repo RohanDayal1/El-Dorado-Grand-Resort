@@ -19,6 +19,11 @@ public class AdminLogic
         return AdminAccess.GetAllReservation();
     }
 
+    public ReservationModel? GetReservation(int id)
+    {
+        return AdminAccess.GetReservation(id);
+    }
+
     public string CancelReservation(int reservationid)
     {
         var reservation = AdminAccess.GetReservation(reservationid);

@@ -39,30 +39,6 @@ public static class AdminAccess
         return AllReservation;
     }
 
-    public static void ViewReservation()
-    {
-        Console.Write("Reservation ID: ");
-        string? id = Console.ReadLine();
-        if (!int.TryParse(id, out int rID))
-        {
-            Console.WriteLine("invalid id");
-            return;
-        }
-        ReservationModel? reservation = GetReservation(rID);
-        if (reservation == null)
-        {
-            Console.WriteLine("Reservation doesn't exist");
-            return;
-        }
-        Console.WriteLine($" ReservationId: {reservation.ReservationId}");
-        Console.WriteLine($" Reservation Code: {reservation.ReservationCode}");
-        Console.WriteLine($" UserId: {reservation.UserId}");
-        Console.WriteLine($" Check in date {reservation.CheckInDate:yyyy-MM-dd}");
-        Console.WriteLine($" Check out date {reservation.CheckOutDate:yyyy-MM-dd}");
-        Console.WriteLine($" Total Cost: {reservation.TotalCost}");
-        Console.WriteLine($" Status: {reservation.Status}");
-    }
-
     public static void CancelReservation(int id)
     {
         using var connection = DatabaseInitializer.Connect();
