@@ -237,52 +237,55 @@ public static class Menu
 					{
 						accountUser = createdUser;
 						validating = false;
-						Console.WriteLine("Registration successful!");
+						Console.WriteLine("\n   *Personal Data saved*");
+						Console.WriteLine("  Press any key to continue.");
+						Console.ReadKey();
+						Console.Clear();
 					}
 					else
 					{
-						Console.WriteLine("Could not retrieve the registered user.");
+						Console.WriteLine("  Could not retrieve the registered user.");
 					}
 					break;
 
 				case UserRegisterErrors.InvalidName:
-					Console.WriteLine("Invalid first name.");
+					Console.WriteLine("\n  Invalid first name.");
 					break;
 
 				case UserRegisterErrors.InvalidLastName:
-					Console.WriteLine("Invalid last name.");
+					Console.WriteLine("\n  Invalid last name.");
 					break;
 
 				case UserRegisterErrors.InvalidEmail:
-					Console.WriteLine("Invalid email address.");
+					Console.WriteLine("\n  Invalid email address.");
 					break;
 
 				case UserRegisterErrors.EmailAlreadyExists:
-					Console.WriteLine("This email address is already registered.");
+					Console.WriteLine("\n  This email address is already registered.");
 					break;
 
 				case UserRegisterErrors.InvalidBirthDate:
-					Console.WriteLine("Invalid birth date.");
+					Console.WriteLine("\n  Invalid birth date.");
 					break;
 
 				case UserRegisterErrors.InvalidPhoneNumber:
-					Console.WriteLine("Invalid phone number.");
+					Console.WriteLine("\n  Invalid phone number.");
 					break;
 
 				case UserRegisterErrors.InvalidUser:
-					Console.WriteLine("Invalid user.");
+					Console.WriteLine("\n  Invalid user.");
 					break;
 
 				case UserRegisterErrors.InvalidPassword:
-					Console.WriteLine("Invalid password.");
+					Console.WriteLine("\n  Invalid password.");
 					break;
 
 				case UserRegisterErrors.PasswordMismatch:
-					Console.WriteLine("Passwords do not match.");
+					Console.WriteLine("\n  Passwords do not match.");
 					break;
 
 				case UserRegisterErrors.InvalidRole:
-					Console.WriteLine("Invalid role.");
+					Console.WriteLine("\n  Invalid role.");
 					break;
 			}
 
@@ -298,6 +301,13 @@ public static class Menu
 
 		while (registeringPassword)
 		{
+
+			Console.WriteLine("Password requirements:");
+			Console.WriteLine("- 8 to 20 characters long");
+			Console.WriteLine("- At least 1 uppercase letter");
+			Console.WriteLine("- At least 1 number");
+			Console.WriteLine("- At least 1 special character\n\n");
+
 			Console.Write("  Password: ");
 			string password = Console.ReadLine() ?? string.Empty;
 			Console.Write("  Repeat Password: ");
@@ -310,24 +320,24 @@ public static class Menu
 			switch (validation)
 			{
 				case UserRegisterErrors.Success:
-					Console.WriteLine("\n Registration successful!\n");
+					Console.WriteLine("\n  Account successfully created!");
 					registeringPassword = false;
 					break;
 
 				case UserRegisterErrors.InvalidPassword:
-					Console.WriteLine("Invalid password.");
+					Console.WriteLine("\n  Invalid password.");
 					break;
 
 				case UserRegisterErrors.PasswordMismatch:
-					Console.WriteLine("Passwords do not match.");
+					Console.WriteLine("\n  Passwords do not match.");
 					break;
 
 				case UserRegisterErrors.InvalidUser:
-					Console.WriteLine("Invalid user.");
+					Console.WriteLine("\n  Invalid user.");
 					break;
 
 				default:
-					Console.WriteLine("Registration failed.");
+					Console.WriteLine("\n  Registration failed.");
 					break;
 			}
 
@@ -337,6 +347,7 @@ public static class Menu
 				Console.WriteLine("  Press any key to try again...");
 				Console.ReadKey();
 				Console.WriteLine();
+				Console.Clear();
 			}
 		}
 		ReturnPrompt();
