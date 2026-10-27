@@ -1,7 +1,7 @@
 using Microsoft.Data.Sqlite;
 using Dapper;
 
-public static class AccountAccess
+public static class AccountsAccess
 {
     private static readonly SqliteConnection _connection = new($"Data Source=DataSources/el_dorado.db");
     private const string _table = "Accounts";
