@@ -206,19 +206,35 @@ public static class Menu
 		Console.WriteLine("  EL DORADO GRAND RESORT  |  REGISTER");
 		Console.WriteLine(Border);
 		Console.WriteLine();
-		Console.Write("  Full name: ");
-		string fullName = Console.ReadLine()?.Trim() ?? string.Empty;
+		
+		Console.Write("  First name: ");
+		string firstName = Console.ReadLine()?.Trim() ?? string.Empty;
+		Console.Write("  Last name: ");
+		string lastName = Console.ReadLine()?.Trim() ?? string.Empty;
 		Console.Write("  Email address: ");
 		string email = Console.ReadLine()?.Trim() ?? string.Empty;
+		Console.Write("  Phone Number: ");
+		string phoneNumber = Console.ReadLine()?.Trim() ?? string.Empty;
+
 		Console.Write("  Password: ");
 		string password = Console.ReadLine() ?? string.Empty;
+		Console.Write("  Repeat Password: ");
+		string repeatpassword = Console.ReadLine() ?? string.Empty;
 		Console.WriteLine();
+
+		
+
+		AccountsLogic.Register(fullName, email, password, repeatpassword, "Guest");
+
+
+
 
 		if (string.IsNullOrWhiteSpace(fullName) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
 		{
 			Console.WriteLine("  Please fill in all fields to try to register.");
 		}
 		else
+
 		{
 			Console.WriteLine($"  Thanks, {fullName}. Your details were entered, but no account was saved.");
 			Console.WriteLine("  Registration is not connected to an account system yet.");
