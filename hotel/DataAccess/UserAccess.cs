@@ -8,13 +8,13 @@ public static class UserAccess
 
     public static UserModel? GetById(int id)
     {
-        string sql = $"SELECT * FROM {_table} WHERE User_Id = @Id";
+        string sql = $"SELECT User_Id AS UserId, First_Name AS FirstName, Last_Name AS LastName, Email, Phone, Date_Of_Birth AS DateOfBirth FROM {_table} WHERE User_Id = @Id";
         return _connection.QueryFirstOrDefault<UserModel>(sql, new { Id = id });
     }
 
     public static UserModel? GetByEmail(string email)
     {
-        string sql = $"SELECT * FROM {_table} WHERE Email = @Email";
+        string sql = $"SELECT User_Id AS UserId, First_Name AS FirstName, Last_Name AS LastName, Email, Phone, Date_Of_Birth AS DateOfBirth FROM {_table} WHERE Email = @Email";
         return _connection.QueryFirstOrDefault<UserModel>(sql, new { Email = email });
     }
 

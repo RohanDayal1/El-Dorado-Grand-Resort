@@ -4,11 +4,11 @@ using Dapper;
 public static class AccountsAccess
 {
     private static readonly SqliteConnection _connection = new($"Data Source=DataSources/el_dorado.db");
-    private const string _table = "Accounts";
+    private const string _table = "Account";
 
     public static AccountModel? GetById(int id)
     {
-        string sql = $"SELECT * FROM {_table} WHERE Account_Id = @Id";
+        string sql = $"SELECT Account_Id AS Id, User_Id AS UserId, Password, Role FROM {_table} WHERE Account_Id = @Id";
         return _connection.QueryFirstOrDefault<AccountModel>(sql, new { Id = id });
     }
     public static void Create(AccountModel account)
@@ -19,13 +19,13 @@ public static class AccountsAccess
 
     public static void Delete(AccountModel account)
     {
-        string sql = $"DELETE FROM {_table} WHERE User_Id = @Id";
+        string sql = $"DELETE FROM {_table} WHERE Account_Id = @Id";
         _connection.Execute(sql, new { account.Id });
     }
 
     public static void Update(AccountModel account)
     {
-        string sql = $"UPDATE {_table} SET User_Id = @UserId, Password = @Password, Role = @Role WHERE User_Id = @Id";
+        string sql = $"UPDATE {_table} SET User_Id = @UserId, Password = @Password, Role = @Role WHERE Account_Id = @Id";
         _connection.Execute(sql, account);
     }
 

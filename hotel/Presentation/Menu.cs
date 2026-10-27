@@ -294,16 +294,56 @@ public static class Menu
 			}
 		}
 
-		Console.Write("  Password: ");
-		string password = Console.ReadLine() ?? string.Empty;
-		Console.Write("  Repeat Password: ");
-		string repeatPassword = Console.ReadLine() ?? string.Empty;
-		Console.WriteLine();
+		bool registeringPassword = true;
 
-		AccountsLogic.Register(accountUser.UserId, password, repeatPassword, "Guest");
+		while (registeringPassword)
+		{
+			Console.Write("  Password: ");
+			string password = Console.ReadLine() ?? string.Empty;
+			Console.Write("  Repeat Password: ");
+			string repeatPassword = Console.ReadLine() ?? string.Empty;
+			Console.WriteLine();
 
+			UserRegisterErrors validation = AccountsLogic.Register(accountUser.UserId, password, repeatPassword, "guest");
+
+
+			switch (validation)
+			{
+				case UserRegisterErrors.Success:
+					Console.WriteLine("\n Registration successful!\n");
+					registeringPassword = false;
+					break;
+
+				case UserRegisterErrors.InvalidPassword:
+					Console.WriteLine("Invalid password.");
+					break;
+
+				case UserRegisterErrors.PasswordMismatch:
+					Console.WriteLine("Passwords do not match.");
+					break;
+
+				case UserRegisterErrors.InvalidUser:
+					Console.WriteLine("Invalid user.");
+					break;
+
+				default:
+					Console.WriteLine("Registration failed.");
+					break;
+			}
+
+			if (registeringPassword)
+			{
+				Console.WriteLine();
+				Console.WriteLine("  Press any key to try again...");
+				Console.ReadKey();
+				Console.WriteLine();
+			}
+		}
 		ReturnPrompt();
 	}
+
+
+		
 
 	private static void ReturnPrompt()
 	{
