@@ -206,39 +206,101 @@ public static class Menu
 		Console.WriteLine("  EL DORADO GRAND RESORT  |  REGISTER");
 		Console.WriteLine(Border);
 		Console.WriteLine();
-		
-		Console.Write("  First name: ");
-		string firstName = Console.ReadLine()?.Trim() ?? string.Empty;
-		Console.Write("  Last name: ");
-		string lastName = Console.ReadLine()?.Trim() ?? string.Empty;
-		Console.Write("  Email address: ");
-		string email = Console.ReadLine()?.Trim() ?? string.Empty;
-		Console.Write("  Phone Number: ");
-		string phoneNumber = Console.ReadLine()?.Trim() ?? string.Empty;
+
+		UserModel accountUser = new();
+		bool validating = true;
+
+		while (validating)
+		{
+			Console.Clear();
+
+			Console.Write("  First name: ");
+			string firstName = Console.ReadLine()?.Trim() ?? string.Empty;
+			Console.Write("  Last name: ");
+			string lastName = Console.ReadLine()?.Trim() ?? string.Empty;
+			Console.Write("  Email address: ");
+			string email = Console.ReadLine()?.Trim() ?? string.Empty;
+			Console.Write("  Phone number: ");
+			string phoneNumber = Console.ReadLine()?.Trim() ?? string.Empty;
+			Console.Write("  Birth date (yyyy-mm-dd): ");
+			string birthDate = Console.ReadLine()?.Trim() ?? string.Empty;
+
+			UserValidator validator = new();
+			UserRegisterErrors validation = validator.Register(firstName, lastName, birthDate, email, phoneNumber);
+
+			switch (validation)
+			{
+				case UserRegisterErrors.Success:
+					UserModel? createdUser = UserAccess.GetByEmail(email);
+
+					if (createdUser != null)
+					{
+						accountUser = createdUser;
+						validating = false;
+						Console.WriteLine("Registration successful!");
+					}
+					else
+					{
+						Console.WriteLine("Could not retrieve the registered user.");
+					}
+					break;
+
+				case UserRegisterErrors.InvalidName:
+					Console.WriteLine("Invalid first name.");
+					break;
+
+				case UserRegisterErrors.InvalidLastName:
+					Console.WriteLine("Invalid last name.");
+					break;
+
+				case UserRegisterErrors.InvalidEmail:
+					Console.WriteLine("Invalid email address.");
+					break;
+
+				case UserRegisterErrors.EmailAlreadyExists:
+					Console.WriteLine("This email address is already registered.");
+					break;
+
+				case UserRegisterErrors.InvalidBirthDate:
+					Console.WriteLine("Invalid birth date.");
+					break;
+
+				case UserRegisterErrors.InvalidPhoneNumber:
+					Console.WriteLine("Invalid phone number.");
+					break;
+
+				case UserRegisterErrors.InvalidUser:
+					Console.WriteLine("Invalid user.");
+					break;
+
+				case UserRegisterErrors.InvalidPassword:
+					Console.WriteLine("Invalid password.");
+					break;
+
+				case UserRegisterErrors.PasswordMismatch:
+					Console.WriteLine("Passwords do not match.");
+					break;
+
+				case UserRegisterErrors.InvalidRole:
+					Console.WriteLine("Invalid role.");
+					break;
+			}
+
+			if (validating)
+			{
+				Console.WriteLine();
+				Console.WriteLine("  Press any key to try again...");
+				Console.ReadKey();
+			}
+		}
 
 		Console.Write("  Password: ");
 		string password = Console.ReadLine() ?? string.Empty;
 		Console.Write("  Repeat Password: ");
-		string repeatpassword = Console.ReadLine() ?? string.Empty;
+		string repeatPassword = Console.ReadLine() ?? string.Empty;
 		Console.WriteLine();
 
-		
-
-		AccountsLogic.Register(fullName, email, password, repeatpassword, "Guest");
-
-
-
-
-		if (string.IsNullOrWhiteSpace(fullName) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
-		{
-			Console.WriteLine("  Please fill in all fields to try to register.");
-		}
-		else
-
-		{
-			Console.WriteLine($"  Thanks, {fullName}. Your details were entered, but no account was saved.");
-			Console.WriteLine("  Registration is not connected to an account system yet.");
-		}
+		AccountsLogic.Register(accountUser.UserId, password, repeatPassword, "Guest");
 
 		ReturnPrompt();
 	}

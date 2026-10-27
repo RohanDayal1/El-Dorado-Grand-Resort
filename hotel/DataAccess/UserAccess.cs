@@ -20,13 +20,13 @@ public static class UserAccess
 
     public static void Create(UserModel user)
     {
-        string sql = $"INSERT INTO {_table} (First_Name, Last_Name, Email, Phone, Date_Of_Birth) VALUES (@Name, @LastName, @Email, @PhoneNumber, @BirthDate)";
+        string sql = $"INSERT INTO {_table} (First_Name, Last_Name, Email, Phone, Date_Of_Birth) VALUES (@FirstName, @LastName, @Email, @Phone, @DateOfBirth)";
         _connection.Execute(sql, user);
     }
 
     public static void Update(UserModel user)
     {
-        string sql = $"UPDATE {_table} SET First_Name = @Name, Last_Name = @LastName, Email = @Email, Phone = @PhoneNumber, Date_Of_Birth = @BirthDate WHERE User_Id = @Id";
+        string sql = $"UPDATE {_table} SET First_Name = @FirstName, Last_Name = @LastName, Email = @Email, Phone = @Phone, Date_Of_Birth = @DateOfBirth WHERE User_Id = @Id";
         _connection.Execute(sql, user);
     }
 

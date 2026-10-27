@@ -37,10 +37,10 @@ public class AccountsLogic
         return null;
     }
 
-    public static UserRegisterErrors Register(string fullname, string email, string password, string repeatedpassword, string role)
+    public static UserRegisterErrors Register(int userId, string password, string repeatedpassword, string role)
     {
-        
-        
+        if (!ValidateUser(userId))
+            return UserRegisterErrors.InvalidUser;
         if (!ValidatePassword(password))
             return UserRegisterErrors.InvalidPassword;
         if (password != repeatedpassword)
@@ -55,11 +55,6 @@ public class AccountsLogic
         AccountsAccess.Create(account);
 
         return UserRegisterErrors.Success;
-    }
-
-    public static UserModel CreateUser()
-    {
-        
     }
 
     public static bool ValidateUser(int userid)
