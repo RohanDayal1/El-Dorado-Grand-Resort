@@ -1,3 +1,5 @@
+using System.Security.Cryptography.X509Certificates;
+
 public class AdminLogic
 {
     public bool IsAdmin(AccountModel? account)
@@ -14,7 +16,7 @@ public class AdminLogic
         return AdminAccess.GetAllGuest();
     }
 
-    public List<ReservationModel> ShowAllReservation()
+    public List<ReservationDetailModel> ShowAllReservation()
     {
         return AdminAccess.GetAllReservation();
     }
@@ -35,51 +37,50 @@ public class AdminLogic
         {
             return "Reservation already cancelled";
         }
-
         AdminAccess.CancelReservation(reservationid);
         return "Reservation cancelled";
     }
 
     public string EditReservation(int reservationId, DateTime newCheckInDate, DateTime newCheckOutDate)
     {
-        var errors = ReservationValidator.ValidateDate(newCheckInDate, newCheckOutDate, DateTime.Today);
-        if (errors.Count > 0)
-        {
-            return "Invalid dates";
-        }
-
         var currentReservation = AdminAccess.GetReservation(reservationId);
         if (currentReservation == null)
         {
             return "Reservation doesn't exist";
+        }
+
+        var errors = ReservationValidator.ValidateDate(newCheckInDate, newCheckOutDate, DateTime.Today);
+        if (errors.Count > 0)
+        {
+            return "Invalid dates";
         }
         if (currentReservation.Status == "cancelled")
         {
             return "Reservation is cancelled, cannot edit reservation";
         }
 
-        Dictionary<int, int> RoomSwap = new();
-        List<int> ids = AdminAccess.GetReservationRoomIds(reservationId).ToList();
-        foreach (var roomId in ids)
+        Dictionary<int, int> roomIdReplacements = new();
+        List<int> currentRoomIds = AdminAccess.GetRoomIdsByReservationId(reservationId).ToList();
+        foreach (var roomId in currentRoomIds)
         {
             bool foundOtherRoom = false;
             
-            bool currentRoomisFree = AdminAccess.IsRoomFree(roomId, newCheckInDate, newCheckOutDate, reservationId);
+            bool currentRoomisFree = IsRoomFree(roomId, newCheckInDate, newCheckOutDate, reservationId);
             if (!currentRoomisFree)
             {
                 List<int> otherRooms = AdminAccess.GetRoomOfSameType(roomId).ToList();
 
                 foreach (int otherRoomId in otherRooms)
                 {
-                    if (ids.Contains(otherRoomId) || RoomSwap.ContainsValue(otherRoomId))
+                    if (currentRoomIds.Contains(otherRoomId) || roomIdReplacements.ContainsValue(otherRoomId))
                     {
                         continue;
                     }
-                    bool isOtherRoomFree = AdminAccess.IsRoomFree(otherRoomId, newCheckInDate, newCheckOutDate, reservationId);
+                    bool isOtherRoomFree = IsRoomFree(otherRoomId, newCheckInDate, newCheckOutDate, reservationId);
                     if (isOtherRoomFree)
                     {
                         foundOtherRoom = true;
-                        RoomSwap.Add(roomId, otherRoomId);
+                        roomIdReplacements.Add(roomId, otherRoomId);
                         break;
                     }
                 }
@@ -90,14 +91,51 @@ public class AdminLogic
             }
         }
 
+        List<RoomTypeModel> roomTypes = new();
+        foreach (var roomId in currentRoomIds)
+        {
+            int newRoomId = roomId;
+            if (roomIdReplacements.ContainsKey(roomId))
+            {
+                newRoomId = roomIdReplacements[roomId];
+            }
+            RoomTypeModel? roomType = AdminAccess.GetRoomTypeByRoomId(newRoomId);
+            if (roomType == null)
+            {
+                return "Room not found";
+            }
+            roomTypes.Add(roomType);
+        }
+
+        decimal totalCost = new ReservationLogic().CalculateTotalCost(newCheckInDate, newCheckOutDate, roomTypes);
+
         currentReservation.CheckInDate = newCheckInDate;
         currentReservation.CheckOutDate = newCheckOutDate;
-        AdminAccess.UpdateReservationToDb(currentReservation);
+        currentReservation.TotalCost = totalCost;
+        AdminAccess.SaveReservationEdit(currentReservation, roomIdReplacements);
 
-        foreach (KeyValuePair<int, int> pair in RoomSwap)
-        {
-            AdminAccess.SwapRoom(reservationId, pair.Key, pair.Value);
-        }
         return "Reservation updated";
+    }
+
+    public bool IsRoomFree(int roomid, DateTime newcheckin, DateTime newcheckout, int reservationIdToSkip)
+    {
+        List<ReservationModel> reservations = AdminAccess.GetReservationsByRoomId(roomid);
+        foreach (ReservationModel reservation in reservations)
+        {
+            if (reservation.Status == "cancelled")
+            {
+                continue;
+            }
+            if (reservation.ReservationId == reservationIdToSkip)
+            {
+                continue;
+            }
+            if (newcheckin >= reservation.CheckOutDate || newcheckout <= reservation.CheckInDate)
+            {
+                continue;
+            }
+            return false;
+        }
+        return true;
     }
 }

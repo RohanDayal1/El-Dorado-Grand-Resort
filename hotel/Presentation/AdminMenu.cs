@@ -7,6 +7,7 @@ public static class AdminMenu
         bool viewadminmenu = true;
         while (viewadminmenu)
         {
+            ConsoleHelper.ClearScreen();
             ShowAdminMenu();
             Console.Write("Select an option: ");
             string? choice = Console.ReadLine()?.Trim();
@@ -35,21 +36,27 @@ public static class AdminMenu
                     break;
                 default:
                     Console.WriteLine("invalid option");
-                    continue;
+                    break;
             }
+        if (viewadminmenu)
+        {
+            Console.Write("  Press Enter to return to the admin menu...");
+            Console.ReadLine();
+        }
         }
     }
 
     public static void ShowAdminMenu()
     {
+        ConsoleHelper.ClearScreen();
 		Console.WriteLine(Border);
-        Console.WriteLine("Welcome to the Admin Menu");
+        Console.WriteLine("  EL DORADO GRAND RESORT  |  ADMIN MENU");
         Console.WriteLine(Border);
         Console.WriteLine();
 
         Console.WriteLine("[1] View all registered guests");
         Console.WriteLine("[2] View all reservations");
-        Console.WriteLine("[3] Select existing reservation");
+        Console.WriteLine("[3] View existing reservation");
         Console.WriteLine("[4] Edit an existing reservation");
         Console.WriteLine("[5] Cancel an existing reservation");
         Console.WriteLine("[0] Back");
@@ -58,35 +65,70 @@ public static class AdminMenu
 
     public static void ShowAllGuests()
     {
+        ConsoleHelper.ClearScreen();
         var allGuests = new AdminLogic().GetAllGuests();
         foreach (var guest in allGuests)
         {
-            Console.WriteLine(@$"Userid: {guest.UserId}, 
-            First name: {guest.FirstName}, 
-            Last name: {guest.LastName}, 
-            Email: {guest.Email}, 
-            Phone: {guest.Phone}, 
-            Date of birth: {guest.DateOfBirth:yyyy-MM-dd}");
+            Console.WriteLine($"  User ID:         {guest.UserId}");
+            Console.WriteLine($"  Name:            {guest.FirstName} {guest.LastName}");
+            Console.WriteLine($"  Email:           {guest.Email}");
+            Console.WriteLine($"  Phone:           {guest.Phone}");
+            Console.WriteLine($"  Date of birth:   {guest.DateOfBirth:yyyy-MM-dd}");
+            Console.WriteLine();
         }
     }
 
     public static void ShowAllReservation()
     {
-        var allReservation = AdminAccess.GetAllReservation();
+        ConsoleHelper.ClearScreen();
+        var allReservation = new AdminLogic().ShowAllReservation();
         foreach (var reservation in allReservation)
         {
-            Console.WriteLine(@$"Reservationid: {reservation.ReservationId}, 
-            Reservationcode: {reservation.ReservationCode}, 
-            UserId: {reservation.UserId}, 
-            CheckInDate: {reservation.CheckInDate:yyyy-MM-dd}, 
-            CheckOutDate: {reservation.CheckOutDate:yyyy-MM-dd}, 
-            TotalCost: {reservation.TotalCost}, 
-            Status: {reservation.Status}");
+            Console.WriteLine($"  Reservation ID:  {reservation.ReservationId}");
+            Console.WriteLine($"  Code:            {reservation.ReservationCode}");
+            Console.WriteLine($"  Guest:           {reservation.FirstName} {reservation.LastName}");
+            Console.WriteLine($"  Check-in:        {reservation.CheckInDate:yyyy-MM-dd}");
+            Console.WriteLine($"  Check-out:       {reservation.CheckOutDate:yyyy-MM-dd}");
+            Console.WriteLine($"  Adults:          {reservation.Adults}");
+            Console.WriteLine($"  Children:        {reservation.Children}");
+            Console.WriteLine($"  Total:           {reservation.TotalCost:C}");
+            Console.WriteLine($"  Status:          {reservation.Status}");
+            Console.WriteLine();
         }
+    }
+
+    public static void ShowReservationDetails()
+    {
+        ConsoleHelper.ClearScreen();
+        Console.Write("Reservation ID: ");
+        string? id = Console.ReadLine();
+        if (!int.TryParse(id, out int rID))
+        {
+            Console.WriteLine("invalid id");
+            return;
+        }
+        ReservationModel? reservation = new AdminLogic().GetReservation(rID);
+        if (reservation == null)
+        {
+            Console.WriteLine("Reservation doesn't exist");
+            return;
+        }
+
+        Console.WriteLine();
+        Console.WriteLine($"  Reservation ID:  {reservation.ReservationId}");
+        Console.WriteLine($"  Code:            {reservation.ReservationCode}");
+        Console.WriteLine($"  User ID:         {reservation.UserId}");
+        Console.WriteLine($"  Check-in:        {reservation.CheckInDate:yyyy-MM-dd}");
+        Console.WriteLine($"  Check-out:       {reservation.CheckOutDate:yyyy-MM-dd}");
+        Console.WriteLine($"  Adults:          {reservation.Adults}");
+        Console.WriteLine($"  Children:        {reservation.Children}");
+        Console.WriteLine($"  Total:           {reservation.TotalCost:C}");
+        Console.WriteLine($"  Status:          {reservation.Status}");
     }
 
     public static void ShowEditReservation()
     {
+        ConsoleHelper.ClearScreen();
         Console.Write("Reservation ID: ");
         string? id = Console.ReadLine();
 
@@ -118,6 +160,7 @@ public static class AdminMenu
 
     public static void ShowCancelReservation()
     {
+        ConsoleHelper.ClearScreen();
         int? reservation = ReservationInput.ReadInt("Reservation ID: ");
         if (reservation == null)
         {
@@ -128,29 +171,4 @@ public static class AdminMenu
         Console.WriteLine(result);
     }
 
-    public static void ShowReservationDetails()
-    {
-        Console.Write("Reservation ID: ");
-        string? id = Console.ReadLine();
-        if (!int.TryParse(id, out int rID))
-        {
-            Console.WriteLine("invalid id");
-            return;
-        }
-
-        ReservationModel? reservation = new AdminLogic().GetReservation(rID);
-        if (reservation == null)
-        {
-            Console.WriteLine("Reservation doesn't exist");
-            return;
-        }
-
-        Console.WriteLine($"\n ReservationId: {reservation.ReservationId}");
-        Console.WriteLine($" Reservation Code: {reservation.ReservationCode}");
-        Console.WriteLine($" UserId: {reservation.UserId}");
-        Console.WriteLine($" Check in date {reservation.CheckInDate:yyyy-MM-dd}");
-        Console.WriteLine($" Check out date {reservation.CheckOutDate:yyyy-MM-dd}");
-        Console.WriteLine($" Total Cost: {reservation.TotalCost}");
-        Console.WriteLine($" Status: {reservation.Status}");
-    }
 }
