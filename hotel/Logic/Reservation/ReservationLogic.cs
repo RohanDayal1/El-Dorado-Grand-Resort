@@ -119,7 +119,6 @@ public class ReservationLogic
         int adults,
         int children,
         List<ReservationRoomModel> selectedRooms,
-        List<RoomModel> availableRooms,
         DateTime today
     )
     {
@@ -130,7 +129,6 @@ public class ReservationLogic
             adults,
             children,
             selectedRooms,
-            availableRooms,
             today,
             false
         );
@@ -143,7 +141,6 @@ public class ReservationLogic
         int adults,
         int children,
         List<ReservationRoomModel> selectedRooms,
-        List<RoomModel> availableRooms,
         DateTime today
     )
     {
@@ -158,7 +155,6 @@ public class ReservationLogic
             adults,
             children,
             selectedRooms,
-            availableRooms,
             today,
             true
         );
@@ -171,11 +167,11 @@ public class ReservationLogic
         int adults,
         int children,
         List<ReservationRoomModel> selectedRooms,
-        List<RoomModel> availableRooms,
         DateTime today,
         bool useExistingUser
     )
     {
+        List<RoomModel> availableRooms = RoomsAccess.GetAvailableRooms(checkInDate, checkOutDate);
         List<RoomTypeModel> roomTypes = RoomsAccess.GetRoomTypes();
 
         bool isValid =
