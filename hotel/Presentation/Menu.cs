@@ -88,6 +88,16 @@ public static class Menu
 				case "7":
 					ReservationMenu.Start(signedInAccount);
 					break;
+				case "8":
+					if (new AdminLogic().IsAdmin(signedInAccount))
+					{
+						AdminMenu.StartAdminMenu();
+					}
+					else
+					{
+						Console.WriteLine("\nInvalid choice. Please choose one of the options shown.");
+					}
+					break;
 				case "0":
 					Console.WriteLine("\nThank you for visiting El Dorado Grand Resort. See you soon!");
 					running = false;
@@ -123,6 +133,10 @@ public static class Menu
 		Console.WriteLine(signedInAccount == null
 			? "  [7] Make a reservation (guest checkout)"
 			: "  [7] Make a reservation");
+		if (new AdminLogic().IsAdmin(signedInAccount))
+		{
+			Console.WriteLine("  [8] Admin menu");
+		}
 		Console.WriteLine("  [0] Exit");
 		Console.WriteLine();
 		Console.Write("  Select an option: ");
