@@ -220,26 +220,155 @@ public static class Menu
 		Console.WriteLine("  EL DORADO GRAND RESORT  |  REGISTER");
 		Console.WriteLine(Border);
 		Console.WriteLine();
-		Console.Write("  Full name: ");
-		string fullName = Console.ReadLine()?.Trim() ?? string.Empty;
-		Console.Write("  Email address: ");
-		string email = Console.ReadLine()?.Trim() ?? string.Empty;
-		Console.Write("  Password: ");
-		string password = Console.ReadLine() ?? string.Empty;
-		Console.WriteLine();
 
-		if (string.IsNullOrWhiteSpace(fullName) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+		UserModel accountUser = new();
+		bool validating = true;
+
+		while (validating)
 		{
-			Console.WriteLine("  Please fill in all fields to try to register.");
-		}
-		else
-		{
-			Console.WriteLine($"  Thanks, {fullName}. Your details were entered, but no account was saved.");
-			Console.WriteLine("  Registration is not connected to an account system yet.");
+			Console.Clear();
+
+			Console.Write("  First name: ");
+			string firstName = Console.ReadLine()?.Trim() ?? string.Empty;
+			Console.Write("  Last name: ");
+			string lastName = Console.ReadLine()?.Trim() ?? string.Empty;
+			Console.Write("  Email address: ");
+			string email = Console.ReadLine()?.Trim() ?? string.Empty;
+			Console.Write("  Phone number: ");
+			string phoneNumber = Console.ReadLine()?.Trim() ?? string.Empty;
+			Console.Write("  Birth date (yyyy-mm-dd): ");
+			string birthDate = Console.ReadLine()?.Trim() ?? string.Empty;
+
+			UserValidator validator = new();
+			UserRegisterErrors validation = validator.Register(firstName, lastName, birthDate, email, phoneNumber);
+
+			switch (validation)
+			{
+				case UserRegisterErrors.Success:
+					UserModel? createdUser = UserAccess.GetByEmail(email);
+
+					if (createdUser != null)
+					{
+						accountUser = createdUser;
+						validating = false;
+						Console.WriteLine("\n   *Personal Data saved*");
+						Console.WriteLine("  Press any key to continue.");
+						Console.ReadKey();
+						Console.Clear();
+					}
+					else
+					{
+						Console.WriteLine("  Could not retrieve the registered user.");
+					}
+					break;
+
+				case UserRegisterErrors.InvalidName:
+					Console.WriteLine("\n  Invalid first name.");
+					break;
+
+				case UserRegisterErrors.InvalidLastName:
+					Console.WriteLine("\n  Invalid last name.");
+					break;
+
+				case UserRegisterErrors.InvalidEmail:
+					Console.WriteLine("\n  Invalid email address.");
+					break;
+
+				case UserRegisterErrors.EmailAlreadyExists:
+					Console.WriteLine("\n  This email address is already registered.");
+					break;
+
+				case UserRegisterErrors.InvalidBirthDate:
+					Console.WriteLine("\n  Invalid birth date.");
+					break;
+
+				case UserRegisterErrors.InvalidPhoneNumber:
+					Console.WriteLine("\n  Invalid phone number.");
+					break;
+
+				case UserRegisterErrors.InvalidUser:
+					Console.WriteLine("\n  Invalid user.");
+					break;
+
+				case UserRegisterErrors.InvalidPassword:
+					Console.WriteLine("\n  Invalid password.");
+					break;
+
+				case UserRegisterErrors.PasswordMismatch:
+					Console.WriteLine("\n  Passwords do not match.");
+					break;
+
+				case UserRegisterErrors.InvalidRole:
+					Console.WriteLine("\n  Invalid role.");
+					break;
+			}
+
+			if (validating)
+			{
+				Console.WriteLine();
+				Console.WriteLine("  Press any key to try again...");
+				Console.ReadKey();
+			}
 		}
 
+		bool registeringPassword = true;
+
+		while (registeringPassword)
+		{
+
+			Console.WriteLine("Password requirements:");
+			Console.WriteLine("- 8 to 20 characters long");
+			Console.WriteLine("- At least 1 uppercase letter");
+			Console.WriteLine("- At least 1 number");
+			Console.WriteLine("- At least 1 special character\n\n");
+
+			Console.Write("  Password: ");
+			string password = Console.ReadLine() ?? string.Empty;
+			Console.Write("  Repeat Password: ");
+			string repeatPassword = Console.ReadLine() ?? string.Empty;
+			Console.WriteLine();
+
+			UserRegisterErrors validation = AccountsLogic.Register(accountUser.UserId, password, repeatPassword, "guest");
+
+
+			switch (validation)
+			{
+				case UserRegisterErrors.Success:
+					Console.WriteLine("\n  Account successfully created!");
+					registeringPassword = false;
+					break;
+
+				case UserRegisterErrors.InvalidPassword:
+					Console.WriteLine("\n  Invalid password.");
+					break;
+
+				case UserRegisterErrors.PasswordMismatch:
+					Console.WriteLine("\n  Passwords do not match.");
+					break;
+
+				case UserRegisterErrors.InvalidUser:
+					Console.WriteLine("\n  Invalid user.");
+					break;
+
+				default:
+					Console.WriteLine("\n  Registration failed.");
+					break;
+			}
+
+			if (registeringPassword)
+			{
+				Console.WriteLine();
+				Console.WriteLine("  Press any key to try again...");
+				Console.ReadKey();
+				Console.WriteLine();
+				Console.Clear();
+			}
+		}
 		ReturnPrompt();
 	}
+
+
+		
 
 	private static void ReturnPrompt()
 	{
