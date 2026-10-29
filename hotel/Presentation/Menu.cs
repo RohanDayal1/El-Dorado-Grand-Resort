@@ -245,20 +245,20 @@ public static class Menu
 			switch (validation)
 			{
 				case UserRegisterErrors.Success:
-					UserModel? createdUser = UserAccess.GetByEmail(email);
+					UserModel? createdUser = UserAccess.GetByEmail(email); //Mag niet nieuw logic file maken voor users!
 
 					if (createdUser != null)
 					{
 						accountUser = createdUser;
 						validating = false;
-						Console.WriteLine("\n   *Personal Data saved*");
+						Console.WriteLine("\n");
 						Console.WriteLine("  Press any key to continue.");
 						Console.ReadKey();
 						Console.Clear();
 					}
 					else
 					{
-						Console.WriteLine("  Could not retrieve the registered user.");
+						Console.WriteLine("  An issue has occurd try again."); //als er geen nieuw user is aangemaakt.
 					}
 					break;
 
