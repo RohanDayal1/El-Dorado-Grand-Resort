@@ -152,7 +152,6 @@ public static class ReservationMenu
                         draft.Adults,
                         draft.Children,
                         rooms.SelectedRooms,
-                        rooms.AvailableRooms,
                         today
                     )
                     : logic.ConfirmAccountReservation(
@@ -162,7 +161,6 @@ public static class ReservationMenu
                         draft.Adults,
                         draft.Children,
                         rooms.SelectedRooms,
-                        rooms.AvailableRooms,
                         today
                     );
         }
