@@ -3,6 +3,8 @@ public class ReservationModel
     public int ReservationId { get; set; }
     public string ReservationCode { get; set; } = string.Empty;
     public int UserId { get; set; }
+    public string? FirstName { get; set; } = null;
+    public string? LastName { get; set; } = null;
     public int Adults { get; set; }
     public int Children { get; set; }
     public DateTime CheckInDate { get; set; }

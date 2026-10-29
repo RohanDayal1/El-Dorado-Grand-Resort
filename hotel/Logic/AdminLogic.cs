@@ -16,7 +16,7 @@ public class AdminLogic
         return AdminAccess.GetAllGuest();
     }
 
-    public List<ReservationDetailModel> ShowAllReservation()
+    public List<ReservationModel> ShowAllReservation()
     {
         return AdminAccess.GetAllReservation();
     }

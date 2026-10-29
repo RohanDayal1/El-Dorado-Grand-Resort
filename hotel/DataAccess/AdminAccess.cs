@@ -21,13 +21,14 @@ public static class AdminAccess
         return AllGuests;
     }
 
-    public static List<ReservationDetailModel> GetAllReservation()
+    public static List<ReservationModel> GetAllReservation()
     {
         using var connection = DatabaseInitializer.Connect();
         connection.Open();
 
         const string sql = @"SELECT Reservation_Id AS ReservationId,
                             ReservationCode,
+                            Reservation.User_Id as UserId,
                             User.First_Name as FirstName,
                             User.Last_Name as LastName,
                             CheckInDate,
@@ -39,7 +40,7 @@ public static class AdminAccess
                             FROM Reservation
                             INNER JOIN User ON Reservation.User_Id = User.User_Id";
     
-        List<ReservationDetailModel> AllReservation = connection.Query<ReservationDetailModel>(sql).ToList();
+        List<ReservationModel> AllReservation = connection.Query<ReservationModel>(sql).ToList();
         return AllReservation;
     }
 
