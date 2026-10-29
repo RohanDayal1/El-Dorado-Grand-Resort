@@ -1,6 +1,6 @@
-public class UserValidator
+public static class UserValidator
 {
-    public UserRegisterErrors Register(string name, string lastName, string birthDate, string email, string phoneNumber)
+    public static UserRegisterErrors Register(string name, string lastName, string birthDate, string email, string phoneNumber)
     {
         if (!ValidateName(name))
             return UserRegisterErrors.InvalidName;
@@ -24,7 +24,7 @@ public class UserValidator
         return UserRegisterErrors.Success;
     }
 
-    public bool ValidateName(string name)
+    public static bool ValidateName(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
             return false;
@@ -34,7 +34,7 @@ public class UserValidator
         return true;
     }
 
-    public bool ValidateBirthdate(string birthDate)
+    public static bool ValidateBirthdate(string birthDate)
     {
         DateTime date;
 
@@ -47,7 +47,7 @@ public class UserValidator
         return true;
     }
 
-    public bool ValidateEmail(string email)
+    public static bool ValidateEmail(string email)
     {
         if (string.IsNullOrWhiteSpace(email)) return false;
         if (!email.Contains("@") || !email.Contains(".")) return false;
@@ -63,7 +63,7 @@ public class UserValidator
         return true;
     }
 
-    public bool ValidatePhoneNumber(string phoneNumber)
+    public static bool ValidatePhoneNumber(string phoneNumber)
     {
             if (string.IsNullOrWhiteSpace(phoneNumber))
                 return false;

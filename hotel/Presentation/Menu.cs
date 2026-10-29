@@ -239,13 +239,12 @@ public static class Menu
 			Console.Write("  Birth date (yyyy-mm-dd): ");
 			string birthDate = Console.ReadLine()?.Trim() ?? string.Empty;
 
-			UserValidator validator = new();
-			UserRegisterErrors validation = validator.Register(firstName, lastName, birthDate, email, phoneNumber);
+			UserRegisterErrors validation = UserValidator.Register(firstName, lastName, birthDate, email, phoneNumber);
 
 			switch (validation)
 			{
 				case UserRegisterErrors.Success:
-					UserModel? createdUser = UserAccess.GetByEmail(email); //Mag niet nieuw logic file maken voor users!
+					UserModel? createdUser = UserLogic.GetByEmail(email); //Mag niet nieuw logic file maken voor users!
 
 					if (createdUser != null)
 					{
