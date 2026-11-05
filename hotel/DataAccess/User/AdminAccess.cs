@@ -21,7 +21,7 @@ public static class AdminAccess
         return AllGuests;
     }
 
-    public static List<ReservationDetailModel> GetAllReservation()
+    public static List<ReservationModel> GetAllReservation()
     {
         using var connection = DatabaseInitializer.Connect();
         connection.Open();
@@ -39,7 +39,7 @@ public static class AdminAccess
                             FROM Reservation
                             INNER JOIN User ON Reservation.User_Id = User.User_Id";
     
-        List<ReservationDetailModel> AllReservation = connection.Query<ReservationDetailModel>(sql).ToList();
+        List<ReservationModel> AllReservation = connection.Query<ReservationModel>(sql).ToList();
         return AllReservation;
     }
 
@@ -175,4 +175,34 @@ public static class AdminAccess
         RoomTypeModel? roomType = connection.QueryFirstOrDefault<RoomTypeModel>(sql, new {RoomId = roomid});
         return roomType;
     }
+
+    public static List<RoomDetailModel> GetAllRoom()
+    {
+        using var connection = DatabaseInitializer.Connect();
+        connection.Open();
+
+        const string sql = @"SELECT Room_Id AS RoomId,
+                            Room.Room_Type_Id,
+                            RoomNumber,
+                            rt.Name,
+                            rt.Capacity,
+                            rt.PricePerNight,
+                            rt.BedType
+                            FROM Room
+                            INNER JOIN Room_Type rt ON Room.Room_Type_Id = rt.Room_Type_Id";
+
+        List<RoomDetailModel> Rooms = connection.Query<RoomDetailModel>(sql).ToList();
+        return Rooms;
+    }
+
+    public static void CreateRoom(RoomModel room)
+    {
+        //private const string _table = "Room";
+
+        //int 
+        //const string sql = $"INSERT INTO {_table} (Room_Type_Id, )"
+        return;
+    }
+
+
 }
