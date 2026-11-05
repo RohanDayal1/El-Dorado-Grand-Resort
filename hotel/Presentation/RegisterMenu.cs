@@ -59,8 +59,9 @@ public static class RegisterMenu
 			Console.Clear();
 			Console.WriteLine("Password requirements:");
 			Console.WriteLine("- 8 to 20 characters long");
-			Console.WriteLine("- At least 1 uppercase letter");
-			Console.WriteLine("- At least 1 number");
+			Console.WriteLine("- At least 1 uppercase character.");
+			Console.WriteLine("- At least 1 lowercase character.");
+			Console.WriteLine("- At least 1 digit");
 			Console.WriteLine("- At least 1 special character\n\n");
 
 			Console.Write("  Password: ");
