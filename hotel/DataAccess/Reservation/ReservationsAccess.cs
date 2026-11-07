@@ -3,6 +3,20 @@ using Microsoft.Data.Sqlite;
 
 public static class ReservationsAccess
 {
+    public static ReservationModel? GetById(int reservationId)
+    {
+        using var connection = DatabaseInitializer.Connect();
+
+        return connection.QueryFirstOrDefault<ReservationModel>(
+            @"
+            SELECT Reservation_Id AS ReservationId, ReservationCode, User_Id AS UserId,
+                   CheckInDate, CheckOutDate, Adults, Children, TotalCost, Status
+            FROM Reservation
+            WHERE Reservation_Id = @ReservationId;",
+            new { ReservationId = reservationId }
+        );
+    }
+
     public static IEnumerable<ReservationModel> GetByUserId(int userId)
     {
         using var connection = DatabaseInitializer.Connect();
