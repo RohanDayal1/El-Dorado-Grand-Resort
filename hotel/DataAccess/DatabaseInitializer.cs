@@ -146,8 +146,6 @@ public static class DatabaseInitializer
             CREATE INDEX IX_Facility_Reservation_Facility_Date_Status
                 ON Facility_Reservation (Facility_Id, ReservationDate, Status);
 
-            CREATE INDEX IX_Facility_Reservation_Reservation
-                ON Facility_Reservation (Reservation_Id);
         ");
 
         connection.Execute(@"
