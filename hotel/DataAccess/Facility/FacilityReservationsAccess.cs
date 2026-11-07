@@ -1,5 +1,4 @@
 using Dapper;
-using Microsoft.Data.Sqlite;
 
 public static class FacilityReservationsAccess
 {
@@ -81,83 +80,8 @@ public static class FacilityReservationsAccess
     {
         using var connection = DatabaseInitializer.Connect();
         connection.Open();
-        using var transaction = connection.BeginTransaction();
 
-        int reservationId = InsertReservation(connection, transaction, booking);
-        transaction.Commit();
-        return reservationId;
-    }
-
-    // Keep the current-data reads and insert in one transaction. Logic supplies validation.
-    public static FacilityReservationModel? InsertReservation(
-        int reservationId,
-        int serviceId,
-        DateTime date,
-        Func<ReservationModel?, FacilityModel?, FacilityServiceModel?,
-            List<FacilityReservationModel>, FacilityReservationModel?> createBooking
-    )
-    {
-        using var connection = DatabaseInitializer.Connect();
-        connection.Open();
-        using var transaction = connection.BeginTransaction(deferred: false);
-
-        ReservationModel? stay;
-        FacilityModel? facility;
-        FacilityServiceModel? service;
-        List<FacilityReservationModel> bookings;
-        using (var results = connection.QueryMultiple(
-            @"
-            SELECT Reservation_Id AS ReservationId, ReservationCode, User_Id AS UserId,
-                   CheckInDate, CheckOutDate, Adults, Children, TotalCost, Status
-            FROM Reservation WHERE Reservation_Id = @ReservationId;
-
-            SELECT Facility_Id AS FacilityId, Name, Description, Capacity,
-                   '0001-01-01 ' || OpeningHours AS OpeningHours,
-                   '0001-01-01 ' || ClosingHours AS ClosingHours, Location
-            FROM Facility
-            WHERE Facility_Id = (SELECT Facility_Id FROM Facility_Service
-                                 WHERE Facility_Service_Id = @ServiceId);
-
-            SELECT Facility_Service_Id AS FacilityServiceId, Facility_Id AS FacilityId,
-                   Name, Description, DurationMinutes
-            FROM Facility_Service WHERE Facility_Service_Id = @ServiceId;
-
-            SELECT Facility_Reservation_Id AS FacilityReservationId, Account_Id AS AccountId,
-                   Reservation_Id AS ReservationId, Facility_Id AS FacilityId,
-                   Facility_Service_Id AS FacilityServiceId, ReservationDate,
-                   ReservationDate || ' ' || StartTime AS StartTime,
-                   ReservationDate || ' ' || EndTime AS EndTime, PartySize, Status
-            FROM Facility_Reservation
-            WHERE Facility_Id = (SELECT Facility_Id FROM Facility_Service
-                                 WHERE Facility_Service_Id = @ServiceId)
-              AND ReservationDate = @ReservationDate AND Status = 'confirmed';",
-            new { ReservationId = reservationId, ServiceId = serviceId,
-                  ReservationDate = date.ToString("yyyy-MM-dd") },
-            transaction
-        ))
-        {
-            stay = results.ReadFirstOrDefault<ReservationModel>();
-            facility = results.ReadFirstOrDefault<FacilityModel>();
-            service = results.ReadFirstOrDefault<FacilityServiceModel>();
-            bookings = results.Read<FacilityReservationModel>().ToList();
-        }
-
-        var booking = createBooking(stay, facility, service, bookings);
-        if (booking == null)
-            return null;
-
-        booking.FacilityReservationId = InsertReservation(connection, transaction, booking);
-        transaction.Commit();
-        return booking;
-    }
-
-    private static int InsertReservation(
-        SqliteConnection connection,
-        SqliteTransaction transaction,
-        FacilityReservationModel booking
-    )
-    {
-        int reservationId = connection.QuerySingle<int>(
+        return connection.QuerySingle<int>(
             @"
             INSERT INTO Facility_Reservation
                 (Account_Id, Reservation_Id, Facility_Id, Facility_Service_Id,
@@ -177,10 +101,7 @@ public static class FacilityReservationsAccess
                 EndTime = booking.EndTime.ToString("HH:mm"),
                 booking.PartySize,
                 booking.Status,
-            },
-            transaction
+            }
         );
-
-        return reservationId;
     }
 }
