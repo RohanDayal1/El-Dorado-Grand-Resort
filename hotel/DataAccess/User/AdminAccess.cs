@@ -195,14 +195,41 @@ public static class AdminAccess
         return Rooms;
     }
 
-    public static void CreateRoom(RoomModel room)
+    public static int CreateRoom()
     {
+        using var connection = DatabaseInitializer.Connect();
+        connection.Open();
+
+        const string roomNumberSql = @"SELECT RoomNumber FROM ROOM WHERE RoomNumber LIKE '1%' ORDER BY RoomNumber DESC";
+
+        int HighestRoomNumber = connection.QueryFirst<int>(roomNumberSql);
+        
+        string hNumber = HighestRoomNumber.ToString();
+        if (hNumber.EndsWith("20"))
+        {
+            return 1;
+        }
+        return HighestRoomNumber;
         //private const string _table = "Room";
 
-        //int 
-        //const string sql = $"INSERT INTO {_table} (Room_Type_Id, )"
-        return;
+        //const string sql = $"INSERT INTO {_table} (Room_Type_Id, )";
+        //return;
     }
 
+    public static void SaveRoomType(RoomTypeModel roomtype)
+    {
+        using var connection = DatabaseInitializer.Connect();
+        connection.Open();
 
+        connection.Execute(@"INSERT INTO Room_Type (Name, Description, Capacity, PricePerNight, BedType)
+                            VALUES (@Name, @Description, @Capacity, @PricePerNight, @BedType);", 
+                            new 
+                            {   
+                                roomtype.Name,
+                                roomtype.Description,
+                                roomtype.Capacity,
+                                roomtype.PricePerNight,
+                                roomtype.BedType
+                            });
+    }
 }

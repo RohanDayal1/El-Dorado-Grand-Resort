@@ -16,7 +16,7 @@ public class AdminLogic
         return AdminAccess.GetAllGuest();
     }
 
-    public List<ReservationDetailModel> ShowAllReservation()
+    public List<ReservationModel> ShowAllReservation()
     {
         return AdminAccess.GetAllReservation();
     }
@@ -137,5 +137,20 @@ public class AdminLogic
             return false;
         }
         return true;
+    }
+
+    public List<RoomDetailModel> GetAllRooms()
+    {
+        return AdminAccess.GetAllRoom();
+    }
+
+    public List<RoomTypeErrors> ValidateRoomType(string name, string description, int capacity, decimal pricePerNight, string bedType)
+    {
+        return RoomTypeValidator.ValidateRoomType(name, description, capacity, pricePerNight, bedType);
+    }
+
+    public void AddRoomType(RoomTypeModel roomtype)
+    {
+        AdminAccess.SaveRoomType(roomtype);
     }
 }
