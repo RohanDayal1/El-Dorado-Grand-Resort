@@ -411,6 +411,8 @@ public static class ReservationMenu
 
         ReservationModel? reservation = new ReservationLogic().GetByReservationCode(reservationCode);
 
+        Console.Clear();
+
         if (reservation == null)
         {
             Console.WriteLine("  No reservation was found with this code.");

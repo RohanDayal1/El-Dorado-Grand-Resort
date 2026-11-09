@@ -78,7 +78,7 @@ public static class Menu
 				case "6":
 					if (signedInAccount == null)
 					{
-						ShowPage("LOGIN REQUIRED", new[] { "Please log in to view your reservations." });
+						ReservationMenu.FindGuestReservation();
 					}
 					else
 					{
@@ -129,6 +129,10 @@ public static class Menu
 		if (signedInAccount != null)
 		{
 			Console.WriteLine("  [6] View my reservations");
+		}
+		else
+		{
+			Console.WriteLine("  [6] View reservation (reservation code required)");
 		}
 		Console.WriteLine(signedInAccount == null
 			? "  [7] Make a reservation (guest checkout)"
