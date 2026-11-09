@@ -39,6 +39,7 @@ public static class RoomsAccess
                 {
                     CheckIn = checkInDate.ToString("yyyy-MM-dd"),
                     CheckOut = checkOutDate.ToString("yyyy-MM-dd"),
+                    ReservationId = reservationId
                 }
             )
             .ToList();
