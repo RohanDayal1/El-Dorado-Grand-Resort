@@ -15,6 +15,7 @@ public static class ReservationMenu
         List<ReservationModel> reservations = new ReservationLogic()
             .GetByUserId(account.UserId)
             .ToList();
+        var facilityBookings = new FacilityReservationLogic().GetByUserId(account.UserId);
 
         if (reservations.Count == 0)
         {
@@ -31,9 +32,21 @@ public static class ReservationMenu
                 Console.WriteLine($"  Status:           {reservation.Status}");
                 Console.WriteLine($"  Total:            {reservation.TotalCost:C}");
                 Console.WriteLine();
+                var bookingsForStay = facilityBookings
+                    .Where(booking => booking.ReservationId == reservation.ReservationId)
+                    .ToList();
+                if (bookingsForStay.Count > 0)
+                {
+                    Console.WriteLine("  FACILITY BOOKINGS");
+                    foreach (var booking in bookingsForStay)
+                        FacilityReservationMenu.ShowBooking(booking);
+                }
             }
         }
 
+        if (facilityBookings.Count > 0)
+                    Console.WriteLine("  To modify or cancel this booking, please call reception");
+        Console.WriteLine("  or visit reception during your stay.");
         Console.WriteLine(Border);
         Console.Write("Press Enter to return to your home menu...");
         Console.ReadLine();
