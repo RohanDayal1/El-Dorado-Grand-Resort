@@ -112,4 +112,41 @@ public static class ReservationsAccess
         }
         return reservationId;
     }
+
+    public static ReservationModel? GetReservationCode(string reservationCode)
+    {
+        using var connection = DatabaseInitializer.Connect();
+
+        return connection.QueryFirstOrDefault<ReservationModel>(@"
+        SELECT Reservation_Id AS ReservationId, ReservationCode, User_Id AS UserId, CheckInDate, CheckOutDate, Adults, Children, TotalCost, Status
+        FROM Reservation
+        WHERE ReservationCode = @ReservationCode;", new {ReservationCode = reservationCode});
+    }
+
+    public static List<ReservationRoomModel> GetRooms(int reservationId)
+    {
+        using var connection = DatabaseInitializer.Connect();
+
+        return connection.Query<ReservationRoomModel>(@"
+        SELECT Reservation_Id AS ReservationId, Room_Id AS RoomId
+        FROM Reservation_Room
+        WHERE Reservation_Id = @ReservationId;", new { ReservationId = reservationId } ).ToList();
+    }
+
+    public static void UpdateReservation(ReservationModel reservation, List<ReservationRoomModel> rooms)
+    {
+        using var connection = DatabaseInitializer.Connect();
+
+        string sql = "UPDATE Reservation SET CheckOutDate = @CheckOutDate, TotalCost = @TotalCost WHERE Reservation_Id = @ReservationId";
+        connection.Execute(sql, reservation);
+
+        sql = "DELETE FROM Reservation_Room WHERE Reservation_Id = @ReservationId";
+        connection.Execute(sql, reservation);
+
+        foreach (ReservationRoomModel room in rooms)
+        {
+            sql = "INSERT INTO Reservation_Room (Reservation_Id, Room_Id) VALUES (@ReservationId, @RoomId)";
+            connection.Execute(sql, room);
+        }
+    }
 }
