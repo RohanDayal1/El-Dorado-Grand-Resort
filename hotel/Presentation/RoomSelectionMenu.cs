@@ -1,11 +1,27 @@
 public static class RoomSelectionMenu
 {
     public static RoomSelectionModel? SelectRooms(DateTime checkInDate, DateTime checkOutDate,
-        int adults, int children, string? preferredBedType)
+        int adults, int children, string? preferredBedType, int? reservationId = null, List<ReservationRoomModel>? selectedRooms = null)
     {
         var roomsLogic = new RoomsLogic();
         var reservationLogic = new ReservationLogic();
         var selection = new RoomSelectionModel();
+
+        if (selectedRooms != null)
+            selection.SelectedRooms = selectedRooms;
+
+        selection.AvailableRooms = roomsLogic.GetAvailableRooms(
+            checkInDate, checkOutDate, reservationId);
+
+        if (reservationId == null)
+        {
+            selection.RoomTypes = roomsLogic.GetAvailableRoomTypes(
+                selection.AvailableRooms, selection.SelectedRooms, preferredBedType);
+        }
+        else
+        {
+            selection.RoomTypes = roomsLogic.GetRoomTypes();
+        }
 
         selection.AvailableRooms = roomsLogic.GetAvailableRooms(checkInDate, checkOutDate);
         selection.RoomTypes = roomsLogic.GetAvailableRoomTypes(

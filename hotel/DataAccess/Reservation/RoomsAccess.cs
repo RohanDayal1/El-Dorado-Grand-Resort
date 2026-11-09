@@ -16,7 +16,7 @@ public static class RoomsAccess
             .ToList();
     }
 
-    public static List<RoomModel> GetAvailableRooms(DateTime checkInDate, DateTime checkOutDate)
+    public static List<RoomModel> GetAvailableRooms(DateTime checkInDate, DateTime checkOutDate, int? reservationId = null)
     {
         using var connection = DatabaseInitializer.Connect();
 
@@ -32,6 +32,7 @@ public static class RoomsAccess
                 WHERE r.Status = 'confirmed'
                   AND r.CheckInDate < @CheckOut
                   AND r.CheckOutDate > @CheckIn
+                  AND (@ReservationId IS NULL OR r.Reservation_Id != @ReservationId)
             )
             ORDER BY RoomNumber;",
                 new

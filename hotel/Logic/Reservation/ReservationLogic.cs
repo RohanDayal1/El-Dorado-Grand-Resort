@@ -228,4 +228,36 @@ public class ReservationLogic
 
         return code;
     }
+
+    public ReservationModel? GetByReservationCode(string reservationCode)
+    {
+        return ReservationsAccess.GetByReservationCode(reservationCode.ToUpper());
+    }
+
+    public List<ReservationRoomModel> GetRooms(int reservationId)
+    {
+        return ReservationsAccess.GetRooms(reservationId);
+    }
+
+    public bool CanShortenReservation(ReservationModel reservation, DateTime newCheckOutDate)
+    {
+        return reservation.Status == "confirmed" && newCheckOutDate.Date > DateTime.Today && newCheckOutDate.Date > reservation.CheckInDate.Date && newCheckOutDate.Date < reservation.CheckOutDate.Date;
+    }
+
+    public void UpdateReservation(ReservationModel reservation, List<ReservationRoomModel> selectedRooms, List<RoomModel> availableRooms, List<RoomTypeModel> roomTypes)
+    {
+        List<RoomSelectionErrors> errors = ValidateRoomSelection(reservation.Adults, reservation.Children, selectedRooms, availableRooms, roomTypes);
+
+        if (errors.Count > 0)
+        {
+            Console.WriteLine("The selected rooms are not available.");
+            return;
+        }
+
+        List<RoomTypeModel> selectedTypes = GetSelectedRoomTypes(selectedRooms, availableRooms, roomTypes);
+
+        reservation.TotalCost = CalculateTotalCost(reservation.CheckInDate, reservation.CheckOutDate, selectedTypes);
+
+        ReservationsAccess.UpdateReservation(reservation, selectedRooms);
+    }
 }

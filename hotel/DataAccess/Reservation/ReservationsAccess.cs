@@ -113,7 +113,7 @@ public static class ReservationsAccess
         return reservationId;
     }
 
-    public static ReservationModel? GetReservationCode(string reservationCode)
+    public static ReservationModel? GetByReservationCode(string reservationCode)
     {
         using var connection = DatabaseInitializer.Connect();
 

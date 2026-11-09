@@ -400,4 +400,88 @@ public static class ReservationMenu
                 "There are not enough available rooms of this type.",
             _ => "The room quantity could not be validated.",
         };
+    
+    public static void FindGuestReservation()
+    {
+        ConsoleHelper.ShowHeader("VIEW RESERVATION");
+
+        string? reservationCode = ReservationInput.ReadText("Reservation code: ");
+        if (reservationCode == null)
+            return;
+
+        ReservationModel? reservation = new ReservationLogic().GetByReservationCode(reservationCode);
+
+        if (reservation == null)
+        {
+            Console.WriteLine("  No reservation was found with this code.");
+            ConsoleHelper.WaitForEnter();
+            return;
+        }
+
+        Console.WriteLine($"  Reservation code: {reservation.ReservationCode}");
+        Console.WriteLine($"  Check-in:         {reservation.CheckInDate:yyyy-MM-dd}");
+        Console.WriteLine($"  Check-out:        {reservation.CheckOutDate:yyyy-MM-dd}");
+        Console.WriteLine($"  Status:           {reservation.Status}");
+        Console.WriteLine($"  Total:            {reservation.TotalCost:C}");
+
+        if (reservation.Status != "confirmed")
+        {
+            ConsoleHelper.WaitForEnter();
+            return;
+        }
+
+        string? choice = ReservationInput.ReadText("Enter m to modify this reservation, or q to return: ");
+        if (choice == "m")
+            ModifyReservation(reservation);
+    }
+
+    private static void ModifyReservation(ReservationModel reservation)
+    {
+        ReservationLogic logic = new ReservationLogic();
+
+        Console.WriteLine($"  Current check-out: {reservation.CheckOutDate:yyyy-MM-dd}");
+        DateTime? newCheckOutDate = ReservationInput.ReadDate("New check-out date: ");
+
+        if (newCheckOutDate == null)
+            return;
+
+        if (!logic.CanShortenReservation(reservation, newCheckOutDate.Value))
+        {
+            Console.WriteLine("  You can only shorten your stay.");
+            ConsoleHelper.WaitForEnter();
+            return;
+        }
+
+        List<ReservationRoomModel> currentRooms = logic.GetRooms(reservation.ReservationId);
+        reservation.CheckOutDate = newCheckOutDate.Value;
+
+        RoomSelectionModel? selection = RoomSelectionMenu.SelectRooms(reservation.CheckInDate, reservation.CheckOutDate, reservation.Adults, reservation.Children, null, reservation.ReservationId, currentRooms);
+
+        if (selection == null)
+            return;
+
+        List<RoomTypeModel> selectedTypes = logic.GetSelectedRoomTypes(selection.SelectedRooms, selection.AvailableRooms, selection.RoomTypes);
+
+        decimal newTotalCost = logic.CalculateTotalCost(reservation.CheckInDate, reservation.CheckOutDate, selectedTypes);
+
+        ConsoleHelper.ShowHeader("REVIEW CHANGES");
+        Console.WriteLine($"  New check-out: {reservation.CheckOutDate:yyyy-MM-dd}");
+        Console.WriteLine($"  New total:     {newTotalCost:C}");
+
+        RoomSelectionMenu.ShowSelectedRooms(selection.SelectedRooms, selection.AvailableRooms, selection.RoomTypes, reservation.CheckInDate, reservation.CheckOutDate);
+
+        string? confirm = ReservationInput.ReadText("Save these changes? (y/n): ");
+        if (confirm != "y")
+        {
+            Console.WriteLine("  Changes cancelled.");
+            ConsoleHelper.WaitForEnter();
+            return;
+        }
+
+        logic.UpdateReservation(reservation, selection.SelectedRooms, selection.AvailableRooms, selection.RoomTypes);
+
+        Console.WriteLine("  Reservation successfully updated.");
+
+        ConsoleHelper.WaitForEnter();
+    }
 }
