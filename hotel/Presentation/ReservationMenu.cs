@@ -1,3 +1,5 @@
+using System.Diagnostics.Metrics;
+
 public static class ReservationMenu
 {
     private const string Border = "============================================================";
@@ -19,24 +21,61 @@ public static class ReservationMenu
         if (reservations.Count == 0)
         {
             Console.WriteLine("No reservations were found for your account.");
+            ConsoleHelper.WaitForEnter();
         }
         else
         {
-            foreach (ReservationModel reservation in reservations)
+            string input = "";
+            while (input.ToLower() != "q")
             {
-                Console.WriteLine($"  Reservation ID:   {reservation.ReservationId}");
-                Console.WriteLine($"  Reservation code: {reservation.ReservationCode}");
-                Console.WriteLine($"  Check-in:         {reservation.CheckInDate:yyyy-MM-dd}");
-                Console.WriteLine($"  Check-out:        {reservation.CheckOutDate:yyyy-MM-dd}");
-                Console.WriteLine($"  Status:           {reservation.Status}");
-                Console.WriteLine($"  Total:            {reservation.TotalCost:C}");
-                Console.WriteLine();
-            }
-        }
+                Console.Clear();
 
-        Console.WriteLine(Border);
-        Console.Write("Press Enter to return to your home menu...");
-        Console.ReadLine();
+                int counter = 1;
+
+                Console.WriteLine(Border);
+                Console.WriteLine(
+                    $"  EL DORADO GRAND RESORT  |  RESERVATIONS FOR {(account.FirstName + " " + account.LastName).ToUpper()}"
+                );
+                Console.WriteLine(Border);
+                Console.WriteLine();
+
+                foreach (ReservationModel reservation in reservations)
+                {
+                    Console.WriteLine(Border);
+                    Console.WriteLine($"[{counter}]");
+                    Console.WriteLine();
+                    Console.WriteLine($"  Reservation ID:   {reservation.ReservationId}");
+                    Console.WriteLine($"  Reservation code: {reservation.ReservationCode}");
+                    Console.WriteLine($"  Check-in:         {reservation.CheckInDate:yyyy-MM-dd}");
+                    Console.WriteLine($"  Check-out:        {reservation.CheckOutDate:yyyy-MM-dd}");
+                    Console.WriteLine($"  Status:           {reservation.Status}");
+                    Console.WriteLine($"  Total:            {reservation.TotalCost:C}");
+                    Console.WriteLine();
+
+                    counter++;
+                }
+
+                Console.WriteLine("Choose a reservation to modify:");
+                Console.WriteLine("Q to return");
+                System.Console.WriteLine();
+
+                input = Console.ReadLine() ?? "";
+
+                if (input.ToLower() == "q")
+                    return;
+
+                if (int.TryParse(input, out int num) && num >= 1 && num <= reservations.Count)
+                {
+                    ModifyReservation(reservations[num - 1]);
+                }
+                else
+                {
+                    Console.WriteLine("Invalid number");
+                    System.Console.WriteLine("  Press Enter to try again.");
+                    Console.ReadKey();
+                }
+            }   
+        }
     }
 
     public static void Start(AccountModel? account = null)
@@ -455,32 +494,34 @@ public static class ReservationMenu
         }
 
         List<ReservationRoomModel> currentRooms = logic.GetRooms(reservation.ReservationId);
-        reservation.CheckOutDate = newCheckOutDate.Value;
 
-        RoomSelectionModel? selection = RoomSelectionMenu.SelectRooms(reservation.CheckInDate, reservation.CheckOutDate, reservation.Adults, reservation.Children, null, reservation.ReservationId, currentRooms);
+        RoomSelectionModel? selection = RoomSelectionMenu.SelectRooms(reservation.CheckInDate,newCheckOutDate.Value,reservation.Adults,reservation.Children,null,reservation.ReservationId,currentRooms);
 
         if (selection == null)
             return;
 
         List<RoomTypeModel> selectedTypes = logic.GetSelectedRoomTypes(selection.SelectedRooms, selection.AvailableRooms, selection.RoomTypes);
 
-        decimal newTotalCost = logic.CalculateTotalCost(reservation.CheckInDate, reservation.CheckOutDate, selectedTypes);
+        decimal newTotalCost = logic.CalculateTotalCost(reservation.CheckInDate, newCheckOutDate.Value, selectedTypes);
 
         ConsoleHelper.ShowHeader("REVIEW CHANGES");
-        Console.WriteLine($"  New check-out: {reservation.CheckOutDate:yyyy-MM-dd}");
+        Console.WriteLine($"  New check-out: {newCheckOutDate.Value:yyyy-MM-dd}");
         Console.WriteLine($"  New total:     {newTotalCost:C}");
 
-        RoomSelectionMenu.ShowSelectedRooms(selection.SelectedRooms, selection.AvailableRooms, selection.RoomTypes, reservation.CheckInDate, reservation.CheckOutDate);
+        RoomSelectionMenu.ShowSelectedRooms(selection.SelectedRooms, selection.AvailableRooms, selection.RoomTypes, reservation.CheckInDate, newCheckOutDate.Value);
 
         string? confirm = ReservationInput.ReadText("Save these changes? (y/n): ");
-        if (confirm != "y")
+
+        if (confirm?.ToLower() != "y")
         {
             Console.WriteLine("  Changes cancelled.");
             ConsoleHelper.WaitForEnter();
             return;
         }
 
-        logic.UpdateReservation(reservation, selection.SelectedRooms, selection.AvailableRooms, selection.RoomTypes);
+        reservation.CheckOutDate = newCheckOutDate.Value;
+
+        logic.UpdateReservation(reservation,selection.SelectedRooms,selection.AvailableRooms,selection.RoomTypes);
 
         Console.WriteLine("  Reservation successfully updated.");
 
