@@ -23,7 +23,7 @@ public static class RoomSelectionMenu
             selection.RoomTypes = roomsLogic.GetRoomTypes();
         }
 
-        selection.AvailableRooms = roomsLogic.GetAvailableRooms(checkInDate, checkOutDate);
+        selection.AvailableRooms = roomsLogic.GetAvailableRooms(checkInDate, checkOutDate, reservationId);
         selection.RoomTypes = roomsLogic.GetAvailableRoomTypes(
             selection.AvailableRooms, selection.SelectedRooms, preferredBedType);
 

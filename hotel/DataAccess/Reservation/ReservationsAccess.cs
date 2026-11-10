@@ -146,7 +146,7 @@ public static class ReservationsAccess
         foreach (ReservationRoomModel room in rooms)
         {
             sql = "INSERT INTO Reservation_Room (Reservation_Id, Room_Id) VALUES (@ReservationId, @RoomId)";
-            connection.Execute(sql, room);
+            connection.Execute(sql, new { ReservationId = reservation.ReservationId, RoomId = room.RoomId});
         }
     }
 }
