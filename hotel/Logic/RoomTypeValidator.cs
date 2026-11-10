@@ -1,14 +1,14 @@
 public static class RoomTypeValidator
 {
 
-    public static List<RoomTypeErrors> ValidateRoomType(string roomname, string description, int capacity, decimal pricepernight, string bedtype)
+    public static List<RoomTypeErrors> ValidateRoomType(RoomTypeModel roomtype)
     {
-        var errors = new List<RoomTypeErrors>();
-        if (!ValidateRoomName(roomname)) {errors.Add(RoomTypeErrors.InvalidName);}
-        if (!ValidateDescription(description)) {errors.Add(RoomTypeErrors.InvalidDescription);}
-        if (!ValidateCapacity(capacity)) {errors.Add(RoomTypeErrors.InvalidCapacity);}
-        if (!ValidatePricePerNight(pricepernight)) {errors.Add(RoomTypeErrors.InvalidPricePerNight);}
-        if (!ValidateBedType(bedtype)) {errors.Add(RoomTypeErrors.InvalidBedType);}
+        List<RoomTypeErrors> errors = new();
+        if (!ValidateRoomName(roomtype.Name)) {errors.Add(RoomTypeErrors.InvalidName);}
+        if (!ValidateDescription(roomtype.Description)) {errors.Add(RoomTypeErrors.InvalidDescription);}
+        if (!ValidateCapacity(roomtype.Capacity)) {errors.Add(RoomTypeErrors.InvalidCapacity);}
+        if (!ValidatePricePerNight(roomtype.PricePerNight)) {errors.Add(RoomTypeErrors.InvalidPricePerNight);}
+        if (!ValidateBedType(roomtype.BedType)) {errors.Add(RoomTypeErrors.InvalidBedType);}
         return errors;
     }
 

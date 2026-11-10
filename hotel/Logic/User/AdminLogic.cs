@@ -144,13 +144,50 @@ public class AdminLogic
         return AdminAccess.GetAllRoom();
     }
 
-    public List<RoomTypeErrors> ValidateRoomType(string name, string description, int capacity, decimal pricePerNight, string bedType)
+    public List<RoomTypeModel> GetAllRoomTypes()
     {
-        return RoomTypeValidator.ValidateRoomType(name, description, capacity, pricePerNight, bedType);
+        return AdminAccess.GetAllRoomType();
+    }
+
+    public void AddRoom(RoomModel room)
+    {
+        AdminAccess.SaveRoom(room);
     }
 
     public void AddRoomType(RoomTypeModel roomtype)
     {
         AdminAccess.SaveRoomType(roomtype);
+    }
+
+    public List<int> GetExistingRooms()
+    {
+        return AdminAccess.GetExistingRooms();
+    }
+
+    public List<RoomErrors> ValidateRemoveRoom(int roomnumber)
+    {   
+        RoomModel? room = AdminAccess.GetRoomByRoomNumber(roomnumber);
+        List<ReservationModel> roomReservations = new();
+        if (room != null)
+        {
+            roomReservations = AdminAccess.GetReservationsByRoomId(room.RoomId);
+        }
+        List<RoomErrors> errors = RoomValidator.ValidateRemoveRoom(roomReservations, room);
+        return errors;
+    }
+
+    public void RemoveRoom(int roomnumber)
+    {
+        AdminAccess.DeleteRoom(roomnumber);
+    }
+
+    public void EditRoomTypeOfRoom(int roomnumber, int roomtypeid)
+    {
+        AdminAccess.EditRoomTypeOfRoom(roomnumber, roomtypeid);
+    }
+
+    public void EditRoomTypeInformation(RoomTypeModel roomtype)
+    {
+        AdminAccess.EditRoomTypeInformation(roomtype);
     }
 }

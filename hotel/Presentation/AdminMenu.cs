@@ -83,23 +83,34 @@ public static class AdminMenu
             switch (choice)
             {
                 case "1":
-                    //ShowAllRooms();
-                    int test = AdminAccess.CreateRoom();
-                    Console.WriteLine(test);
+                    ShowAllRooms();
                     break;
                 case "2":
+                    NewHotelRoom();
+                    break;
+                case "3":
                     NewRoomType();
+                    break;
+                case "4":
+                    ShowEditRoomTypeOfRoom();
+                    break;
+                case "5":
+                    ShowEditRoomTypeInformation();
+                    //test();
+                    break;
+                case "6":
+                    ShowRemoveRoom();
                     break;
                 case "0":
                     viewroommenu = false;
                     break;
                 default:
                     Console.WriteLine("invalid option");
-                    break;
+                    continue;
             }
             if (viewroommenu)
             {
-                Console.Write("  Press Enter to return to the room menu...");
+                Console.Write("Press Enter to return to the room menu...");
                 Console.ReadLine();
             }
         }
@@ -114,7 +125,11 @@ public static class AdminMenu
         Console.WriteLine();
 
         Console.WriteLine("[1] View all rooms");
-        Console.WriteLine("[2] Add new room type");
+        Console.WriteLine("[2] Add new room");
+        Console.WriteLine("[3] Add new room type");
+        Console.WriteLine("[4] Edit a room's type");
+        Console.WriteLine("[5] Edit a roomtype information's");
+        Console.WriteLine("[6] Remove a room");
         Console.WriteLine("[0] Back to Admin Menu");
     }
 
@@ -245,28 +260,85 @@ public static class AdminMenu
         }
     }
 
+    public static void NewHotelRoom()
+    {
+        while (true)
+        {
+            ConsoleHelper.ClearScreen();
+            int roomNumber = ReadInputInt("Room number (101-120, 201-220, 301-320, 401-420): ");
+
+            var logic = new AdminLogic();
+            List<RoomTypeModel> allRoomTypes = logic.GetAllRoomTypes();
+            if (allRoomTypes.Count == 0)
+            {
+                Console.WriteLine("No room types exist yet. Add a room type first.");
+                ConsoleHelper.Pause();
+                return;
+            }
+
+            Console.WriteLine("Choose a room type");
+            foreach (var roomtype in allRoomTypes)
+            {
+                Console.WriteLine($"[{roomtype.Room_Type_Id}] {roomtype.Name}");
+            }
+            int roomTypeId = ReadInputInt("Option: ");
+
+            List<int> allExistingRoomNumbers = logic.GetExistingRooms();
+
+            var errors = RoomValidator.ValidateRoom(roomNumber, allRoomTypes, roomTypeId, allExistingRoomNumbers);
+            if (errors.Count > 0)
+            {
+                foreach (var error in errors)
+                {
+                    string errorMessage = error switch
+                                                {
+                                                    RoomErrors.InvalidFloor => "The floor must be 1 to 4. For example: 105 is on floor 1.",
+                                                    RoomErrors.InvalidRoomNumber => "The room on that floor must be 01 to 20.",
+                                                    RoomErrors.InvalidRoomType => "Choose a valid room type.",
+                                                    RoomErrors.RoomNumberTaken => $"Room {roomNumber} is already in use.",
+                                                    _ => "Please check your input and try again."
+                                                };
+                    Console.WriteLine(errorMessage);
+                }
+                ConsoleHelper.Pause();
+                continue;
+            }
+
+            RoomModel room = new RoomModel{RoomNumber = roomNumber, Room_Type_Id = roomTypeId};
+            string? roomTypeName = allRoomTypes.FirstOrDefault(roomtype => roomtype.Room_Type_Id == room.Room_Type_Id)?.Name;
+
+            List<string> lines = new()
+            {
+                $" RoomNumber:     {room.RoomNumber}",
+                $" RoomType:       {room.Room_Type_Id}",
+                $" RoomType Name:  {roomTypeName}"
+            };
+
+            if (!ShowConfirmation(lines))
+            {
+                Console.WriteLine("No new room added");
+                break;
+            }
+            logic.AddRoom(room);
+            Console.WriteLine("Room added");
+            break;
+        }
+    }
+
     public static void NewRoomType()
     {
         while (true)
         {
             ConsoleHelper.ClearScreen();
             Console.Write("RoomType Name: ");
-            string? RoomTypeName = Console.ReadLine()?.Trim() ?? string.Empty; 
+            string RoomTypeName = Console.ReadLine()?.Trim() ?? string.Empty;
+
             Console.Write("Description: ");
-            string? RoomTypeDescription = Console.ReadLine()?.Trim() ?? string.Empty;
-            int Capacity = 0;
-            decimal PricePerNight = 0;
-            while (true)
-            {
-                Console.Write("Capacity: ");
-                string? inputCapacity = Console.ReadLine()?.Trim();
-                if (!int.TryParse(inputCapacity, out Capacity))
-                {
-                    Console.WriteLine("Invalid input");
-                    continue;
-                }
-                break;
-            }
+            string RoomTypeDescription = Console.ReadLine()?.Trim() ?? string.Empty;
+
+            int Capacity = ReadInputInt("Capacity: ");
+
+            decimal PricePerNight;
             while (true)
             {
                 Console.Write("Price per night: ");
@@ -278,11 +350,19 @@ public static class AdminMenu
                 }
                 break;
             }
+
             Console.Write("BedType: ");
-            string? BedType = Console.ReadLine()?.Trim() ?? string.Empty;
+            string BedType = Console.ReadLine()?.Trim() ?? string.Empty;
             
-            var logic = new AdminLogic();
-            var errors = logic.ValidateRoomType(RoomTypeName, RoomTypeDescription, Capacity, PricePerNight, BedType);
+            RoomTypeModel roomtype = new RoomTypeModel 
+                                    {
+                                        Name = RoomTypeName, 
+                                        Description = RoomTypeDescription, 
+                                        Capacity = Capacity, 
+                                        PricePerNight = PricePerNight, 
+                                        BedType = BedType
+                                    };
+            var errors = RoomTypeValidator.ValidateRoomType(roomtype);
 
             if (errors.Count > 0)
             {
@@ -303,52 +383,229 @@ public static class AdminMenu
                 continue;
             }
 
-            RoomTypeModel roomtype = new RoomTypeModel 
-                                    {
-                                        Name = RoomTypeName, 
-                                        Description = RoomTypeDescription, 
-                                        Capacity = Capacity, 
-                                        PricePerNight = PricePerNight, 
-                                        BedType = BedType
-                                    };
-            if (!ShowRoomTypeConfirmation(roomtype))
+            List<string> lines = new()
+            {
+                $" Name:             {roomtype.Name}",
+                $" Description:      {roomtype.Description}",
+                $" Capacity:         {roomtype.Capacity}",
+                $" Price Per Night:  {roomtype.PricePerNight}",
+                $" Bed Type:         {roomtype.BedType}"
+            };
+
+            if (!ShowConfirmation(lines))
             {
                 Console.WriteLine("No new roomtype got added");
                 break;
             }
-            logic.AddRoomType(roomtype);
+            new AdminLogic().AddRoomType(roomtype);
             Console.WriteLine("New roomtype added");
             break;
         }
     }
 
-    public static bool ShowRoomTypeConfirmation(RoomTypeModel roomtype)
+    public static void ShowEditRoomTypeOfRoom()
     {
-        Console.WriteLine();
-        Console.WriteLine("CONFIRM NEW ROOMTYPE");
-        Console.WriteLine($" Name:             {roomtype.Name}");
-        Console.WriteLine($" Description:      {roomtype.Description}");
-        Console.WriteLine($" Capacity:         {roomtype.Capacity}");
-        Console.WriteLine($" Price Per Night:  {roomtype.PricePerNight}");
-        Console.WriteLine($" Bed Type:         {roomtype.BedType}");
-        Console.WriteLine();
-
         while (true)
         {
-            Console.WriteLine("Confirm these details? (y/n)");
-            string? choice = Console.ReadLine();
-            if (choice == "n")
+            ConsoleHelper.ClearScreen();
+            int roomNumber = ReadInputInt("Room number: ");
+
+            var logic = new AdminLogic();
+            List<RoomErrors> errors = logic.ValidateRemoveRoom(roomNumber);
+            if (errors.Count > 0)
             {
-                return false;
+                foreach (var error in errors)
+                {
+                    string errorMessage = error switch
+                                                {
+                                                    RoomErrors.RoomNotFound => "No room with that room number exists",
+                                                    RoomErrors.RoomHasReservations => "This room has confirmed reservations, so it can't be edited.",
+                                                    _ => "Please check your input and try again."
+                                                };
+                    Console.WriteLine(errorMessage);
+                }
+                ConsoleHelper.Pause();
+                continue;
             }
-            else if (choice == "y")
+
+            List<RoomTypeModel> allRoomTypes = logic.GetAllRoomTypes();
+            if (allRoomTypes.Count == 0)
             {
-                return true;
+                Console.WriteLine("No room types exist yet. Add a room type first.");
+                ConsoleHelper.Pause();
+                return;
             }
-            else
+
+            Console.WriteLine("Choose a room type");
+            foreach (var roomtype in allRoomTypes)
             {
-                Console.WriteLine("Invalid input");
+                Console.WriteLine($"[{roomtype.Room_Type_Id}] {roomtype.Name}");
             }
+            int roomTypeId = ReadInputInt("Option: ");
+
+            bool result = RoomValidator.ValidateRoomTypeId(allRoomTypes, roomTypeId);
+            if (!result)
+            {
+                Console.WriteLine("Choose a valid room type.");
+                continue;
+            }
+
+            List<RoomDetailModel> allRooms = logic.GetAllRooms();
+            string? oldRoomTypeName = allRooms.FirstOrDefault(room => room.RoomNumber == roomNumber)?.Name;
+            string? newRoomTypeName = allRoomTypes.FirstOrDefault(roomtype => roomtype.Room_Type_Id == roomTypeId)?.Name;
+
+            List<string> lines = new() 
+            {
+                $"Confirm changes to room {roomNumber}:",
+                $"{oldRoomTypeName} -> {newRoomTypeName}"
+            };
+
+            if (!ShowConfirmation(lines))
+            {
+                Console.WriteLine("Changes abandoned");
+                break;
+            }
+
+            logic.EditRoomTypeOfRoom(roomNumber, roomTypeId);
+            Console.WriteLine("Changes applied");
+            break;
+        }
+    }
+
+    public static void ShowEditRoomTypeInformation()
+    {
+        while (true)
+        {
+            ConsoleHelper.ClearScreen();
+            int roomTypeId = ReadInputInt("Roomtype id to edit: ");
+
+            var logic = new AdminLogic();
+            List<RoomTypeModel> allRoomTypes = logic.GetAllRoomTypes();
+
+            var roomtypeidErrors = RoomValidator.ValidateRoomTypeId(allRoomTypes, roomTypeId);
+            if (!roomtypeidErrors)
+            {
+                Console.WriteLine("Not a valid roomtype id.");
+                ConsoleHelper.Pause();
+                continue;
+            }
+
+            Console.Write("New roomtype Name: ");
+            string newRoomTypeName = Console.ReadLine()?.Trim() ?? string.Empty;
+
+            Console.Write("New Description: ");
+            string NewRoomTypeDescription = Console.ReadLine()?.Trim() ?? string.Empty;
+
+            int newCapacity = ReadInputInt("New capacity: ");
+
+            decimal newPricePerNight;
+            while (true)
+            {
+                Console.Write("New price per night: ");
+                string? inputPrice = Console.ReadLine()?.Trim();
+                if (!decimal.TryParse(inputPrice, out newPricePerNight))
+                {
+                    Console.WriteLine("Invalid input");
+                    continue;
+                }
+                break;
+            }
+
+            Console.Write("new Bedtype: ");
+            string newBedType = Console.ReadLine()?.Trim() ?? string.Empty;
+
+            RoomTypeModel roomtype = new RoomTypeModel 
+                                    {   Room_Type_Id = roomTypeId,
+                                        Name = newRoomTypeName, 
+                                        Description = NewRoomTypeDescription, 
+                                        Capacity = newCapacity, 
+                                        PricePerNight = newPricePerNight, 
+                                        BedType = newBedType
+                                    };
+            var errors = RoomTypeValidator.ValidateRoomType(roomtype);
+            if (errors.Count > 0)
+            {
+                foreach (var error in errors)
+                {
+                    string errorMessage = error switch
+                                                {
+                                                    RoomTypeErrors.InvalidName => "Room type name is required. Please enter a name.",
+                                                    RoomTypeErrors.InvalidDescription => "Description is required. Please enter a short description.",
+                                                    RoomTypeErrors.InvalidCapacity => "Capacity must be at least 1 guest and no more than 10.",
+                                                    RoomTypeErrors.InvalidPricePerNight => "Price per night must be more than 0.",
+                                                    RoomTypeErrors.InvalidBedType => "Bed type is required. Please enter one, like (double) or (twin).",
+                                                    _ => "Please check your input and try again."
+                                                };
+                    Console.WriteLine(errorMessage);
+                }
+                ConsoleHelper.Pause();
+                continue;
+            }
+
+            List<string> lines = new()
+            {
+                $"Confirm changes to roomtype id {roomTypeId}:",
+                $" New Name:             {roomtype.Name}",
+                $" New Description:      {roomtype.Description}",
+                $" New Capacity:         {roomtype.Capacity}",
+                $" New Price Per Night:  {roomtype.PricePerNight}",
+                $" New Bed Type:         {roomtype.BedType}"
+            };
+
+            if (!ShowConfirmation(lines))
+            {
+                Console.WriteLine("Changes abandoned.");
+            }
+            logic.EditRoomTypeInformation(roomtype);
+            Console.WriteLine("Changes applied");
+            break;
+        }
+    }
+
+    public static void ShowRemoveRoom()
+    {
+        while (true)
+        {
+            ConsoleHelper.ClearScreen();
+            int roomNumber = ReadInputInt("Room number: ");
+
+            var logic = new AdminLogic();
+            List<RoomErrors> errors = logic.ValidateRemoveRoom(roomNumber);
+            if (errors.Count > 0)
+            {
+                foreach (var error in errors)
+                {
+                    string errorMessage = error switch
+                                                {
+                                                    RoomErrors.RoomNotFound => "No room with that room number exists",
+                                                    RoomErrors.RoomHasReservations => "This room has confirmed reservations, so it can't be removed.",
+                                                    _ => "Please check your input and try again."
+                                                };
+                    Console.WriteLine(errorMessage);
+                }
+                ConsoleHelper.Pause();
+                continue;
+            }
+            
+            List<RoomDetailModel> rooms = logic.GetAllRooms();
+            RoomDetailModel? room = rooms.First(roomdetail => roomdetail.RoomNumber == roomNumber);
+            List<string> lines = new()
+            {
+                "Room to remove",
+                $"Room Id:        {room.RoomId}",
+                $"Room Number:    {room.RoomNumber}",
+                $"Roomtype Id:    {room.Room_Type_Id}",
+                $"Roomtype Name:  {room.Name}"
+            };
+
+            if (!ShowConfirmation(lines))
+            {
+                Console.WriteLine("No room got removed");
+                break;
+            }
+            logic.RemoveRoom(roomNumber);
+            Console.WriteLine("Room removed");
+            break;
         }
     }
 
@@ -358,5 +615,79 @@ public static class AdminMenu
         string? input = Console.ReadLine()?.Trim().ToLower();
         if (input == null || input == "q") {return null;}
         return input;
+    }
+
+    public static int ReadInputInt(string message)
+    {
+        while (true)
+        {
+            Console.Write(message);
+            string? input = Console.ReadLine()?.Trim();
+            if (!int.TryParse(input, out int intOutput))
+            {
+                Console.WriteLine("Invalid input");
+                continue;
+            }
+            return intOutput;
+        }
+    }
+
+    public static bool ShowConfirmation(List<string> lines)
+    {
+        Console.WriteLine();
+        Console.WriteLine("CONFIRM DETAILS");
+        foreach (var line in lines)
+        {
+            Console.WriteLine(line);
+        }
+        Console.WriteLine();
+
+        while (true)
+        {
+            Console.Write("Confirm these details? (y/n): ");
+            string? choice = Console.ReadLine()?.Trim().ToLower();
+            if (choice == "y")
+                return true;
+            if (choice == "n")
+                return false;
+            Console.WriteLine("Invalid input");
+        }
+    }
+
+    public static void test()
+    {
+        Console.Write("New roomtype Name: ");
+        string newRoomTypeName = Console.ReadLine()?.Trim() ?? string.Empty;
+
+        Console.Write("New Description: ");
+        string NewRoomTypeDescription = Console.ReadLine()?.Trim() ?? string.Empty;
+
+        int newCapacity = ReadInputInt("New capacity: ");
+
+        decimal newPricePerNight;
+        while (true)
+        {
+            Console.Write("New price per night: ");
+            string? inputPrice = Console.ReadLine()?.Trim();
+            if (!decimal.TryParse(inputPrice, out newPricePerNight))
+            {
+                Console.WriteLine("Invalid input");
+                continue;
+            }
+            break;
+        }
+
+        Console.Write("new Bedtype: ");
+        string newBedType = Console.ReadLine()?.Trim() ?? string.Empty;
+
+        RoomTypeModel roomtype = new RoomTypeModel 
+                                {
+                                    Name = newRoomTypeName, 
+                                    Description = NewRoomTypeDescription, 
+                                    Capacity = newCapacity, 
+                                    PricePerNight = newPricePerNight, 
+                                    BedType = newBedType
+                                };
+        AdminAccess.EditRoomTypeInformation(roomtype);
     }
 }
