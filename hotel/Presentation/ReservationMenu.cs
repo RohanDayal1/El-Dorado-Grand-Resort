@@ -74,16 +74,16 @@ public static class ReservationMenu
             return;
         }
 
-        ReservationOverviewModel? overview = new ReservationLogic()
+        ReservationDetailModel? reservation = new ReservationLogic()
             .GetOverviewByEmailAndCode(email, reservationCode);
-        if (overview == null)
+        if (reservation == null)
         {
             ShowLookupMessage("No reservation matched that email address and code.");
             ConsoleHelper.WaitForEnter();
             return;
         }
 
-        ShowReservationOverview(overview);
+        ShowReservationOverview(reservation);
     }
 
     private static void ShowLookupMessage(string message)
@@ -96,8 +96,12 @@ public static class ReservationMenu
         Console.WriteLine($"  {message}");
     }
 
-    private static void ShowReservationOverview(ReservationOverviewModel overview)
+    private static void ShowReservationOverview(ReservationDetailModel reservation)
     {
+        var roomTypes = RoomsAccess.GetRoomTypes();
+        var rooms = RoomsAccess.GetByReservationId(reservation.ReservationId);
+        var facilities = FacilityReservationsAccess.GetByReservationId(reservation.ReservationId);
+
         ConsoleHelper.ClearScreen();
         Console.WriteLine(Border);
         Console.WriteLine("  EL DORADO GRAND RESORT  |  RESERVATION OVERVIEW");
@@ -105,63 +109,61 @@ public static class ReservationMenu
         Console.WriteLine();
         Console.WriteLine("  RESERVATION");
         Console.WriteLine("  ------------------------------------------------------------");
-        Console.WriteLine($"  Guest:            {overview.GuestName}");
-        Console.WriteLine($"  Email:            {overview.Email}");
-        Console.WriteLine($"  Reservation code: {overview.ReservationCode}");
-        Console.WriteLine($"  Status:           {overview.Status}");
+        Console.WriteLine($"  Guest:            {reservation.FirstName} {reservation.LastName}");
+        Console.WriteLine($"  Reservation code: {reservation.ReservationCode}");
+        Console.WriteLine($"  Status:           {reservation.Status}");
         Console.WriteLine();
         Console.WriteLine("  STAY AND GUESTS");
         Console.WriteLine("  ------------------------------------------------------------");
-        Console.WriteLine($"  Check-in:         {overview.CheckInDate:yyyy-MM-dd}");
-        Console.WriteLine($"  Check-out:        {overview.CheckOutDate:yyyy-MM-dd}");
-        Console.WriteLine($"  Length of stay:   {(overview.CheckOutDate - overview.CheckInDate).Days} nights");
-        Console.WriteLine($"  Adults:           {overview.Adults}");
-        Console.WriteLine($"  Children:         {overview.Children}");
+        Console.WriteLine($"  Check-in:         {reservation.CheckInDate:yyyy-MM-dd}");
+        Console.WriteLine($"  Check-out:        {reservation.CheckOutDate:yyyy-MM-dd}");
+        Console.WriteLine($"  Length of stay:   {(reservation.CheckOutDate - reservation.CheckInDate).Days} nights");
+        Console.WriteLine($"  Adults:           {reservation.Adults}");
+        Console.WriteLine($"  Children:         {reservation.Children}");
         Console.WriteLine();
         Console.WriteLine("  SELECTED ROOMS");
         Console.WriteLine("  ------------------------------------------------------------");
-        if (overview.Rooms.Count == 0)
+        if (rooms.Count == 0)
         {
             Console.WriteLine("  No rooms are listed for this reservation.");
         }
         else
         {
-            foreach (ReservationRoomDetailModel room in overview.Rooms)
+            foreach (RoomModel room in rooms)
             {
-                Console.WriteLine($"  {room.RoomTypeName}  |  Room {room.RoomNumber}");
-                if (!string.IsNullOrWhiteSpace(room.BedType))
-                    Console.WriteLine($"  Bed type: {room.BedType}");
-                if (!string.IsNullOrWhiteSpace(room.Description))
-                    Console.WriteLine($"  {room.Description}");
+                RoomTypeModel? roomType = roomTypes.FirstOrDefault(
+                    type => type.Room_Type_Id == room.Room_Type_Id
+                );
+                Console.WriteLine($"  {roomType?.Name ?? "Room"}  |  Room {room.RoomNumber}");
+                if (!string.IsNullOrWhiteSpace(roomType?.BedType))
+                    Console.WriteLine($"  Bed type: {roomType.BedType}");
+                if (!string.IsNullOrWhiteSpace(roomType?.Description))
+                    Console.WriteLine($"  {roomType.Description}");
                 Console.WriteLine();
             }
         }
 
         Console.WriteLine("  BOOKED FACILITIES");
         Console.WriteLine("  ------------------------------------------------------------");
-        if (overview.Facilities.Count == 0)
+        if (facilities.Count == 0)
         {
             Console.WriteLine("  No facilities are linked to this reservation.");
         }
         else
         {
-            foreach (FacilityReservationDetailModel facility in overview.Facilities)
+            foreach (FacilityReservationModel facility in facilities)
             {
                 Console.WriteLine($"  {facility.FacilityName}  |  {facility.ServiceName}");
                 Console.WriteLine(
-                    $"  Date: {facility.ReservationDate:yyyy-MM-dd}  |  Time: {facility.StartTime}-{facility.EndTime}"
+                    $"  Date: {facility.ReservationDate:yyyy-MM-dd}  |  Time: {facility.StartTime:HH:mm}-{facility.EndTime:HH:mm}"
                 );
                 Console.WriteLine($"  Party size: {facility.PartySize}  |  Status: {facility.Status}");
-                if (!string.IsNullOrWhiteSpace(facility.FacilityDescription))
-                    Console.WriteLine($"  {facility.FacilityDescription}");
-                if (!string.IsNullOrWhiteSpace(facility.ServiceDescription))
-                    Console.WriteLine($"  {facility.ServiceDescription}");
                 Console.WriteLine();
             }
         }
 
         Console.WriteLine(Border);
-        Console.WriteLine($"  TOTAL RESERVATION COST: {overview.TotalCost:C}");
+        Console.WriteLine($"  TOTAL RESERVATION COST: {reservation.TotalCost:C}");
         Console.WriteLine();
         Console.Write("  Press Enter to return to the home menu...");
         Console.ReadLine();

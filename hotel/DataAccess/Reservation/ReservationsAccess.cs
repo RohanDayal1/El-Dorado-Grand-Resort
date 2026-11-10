@@ -32,19 +32,18 @@ public static class ReservationsAccess
         );
     }
 
-    public static ReservationOverviewModel? GetOverviewByEmailAndCode(
+    public static ReservationDetailModel? GetOverviewByEmailAndCode(
         string email,
         string reservationCode
     )
     {
         using var connection = DatabaseInitializer.Connect();
-        ReservationOverviewModel? overview = connection.QuerySingleOrDefault<ReservationOverviewModel>(
+        return connection.QuerySingleOrDefault<ReservationDetailModel>(
             @"
             SELECT r.Reservation_Id AS ReservationId,
                    r.ReservationCode,
-                   r.User_Id AS UserId,
-                   u.First_Name || ' ' || u.Last_Name AS GuestName,
-                   u.Email,
+                   u.First_Name AS FirstName,
+                   u.Last_Name AS LastName,
                    r.CheckInDate,
                    r.CheckOutDate,
                    r.Adults,
@@ -57,44 +56,6 @@ public static class ReservationsAccess
               AND upper(r.ReservationCode) = upper(@ReservationCode);",
             new { Email = email.Trim(), ReservationCode = reservationCode.Trim() }
         );
-
-        if (overview == null)
-            return null;
-
-        overview.Rooms = connection.Query<ReservationRoomDetailModel>(
-            @"
-            SELECT rm.RoomNumber,
-                   rt.Name AS RoomTypeName,
-                   rt.Description,
-                   rt.BedType
-            FROM Reservation_Room rr
-            JOIN Room rm ON rm.Room_Id = rr.Room_Id
-            JOIN Room_Type rt ON rt.Room_Type_Id = rm.Room_Type_Id
-            WHERE rr.Reservation_Id = @ReservationId
-            ORDER BY rm.RoomNumber;",
-            new { overview.ReservationId }
-        ).ToList();
-
-        overview.Facilities = connection.Query<FacilityReservationDetailModel>(
-            @"
-            SELECT f.Name AS FacilityName,
-                   fs.Name AS ServiceName,
-                   f.Description AS FacilityDescription,
-                   fs.Description AS ServiceDescription,
-                   fr.ReservationDate,
-                   fr.StartTime,
-                   fr.EndTime,
-                   fr.PartySize,
-                   fr.Status
-            FROM Facility_Reservation fr
-            JOIN Facility f ON f.Facility_Id = fr.Facility_Id
-            JOIN Facility_Service fs ON fs.Facility_Service_Id = fr.Facility_Service_Id
-            WHERE fr.Reservation_Id = @ReservationId
-            ORDER BY fr.ReservationDate, fr.StartTime;",
-            new { overview.ReservationId }
-        ).ToList();
-
-        return overview;
     }
 
     public static bool ReservationCodeExists(string reservationCode)

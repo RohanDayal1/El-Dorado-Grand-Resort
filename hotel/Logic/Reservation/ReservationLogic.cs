@@ -5,7 +5,7 @@ public class ReservationLogic
         return ReservationsAccess.GetByUserId(userId);
     }
 
-    public ReservationOverviewModel? GetOverviewByEmailAndCode(
+    public ReservationDetailModel? GetOverviewByEmailAndCode(
         string email,
         string reservationCode
     )
