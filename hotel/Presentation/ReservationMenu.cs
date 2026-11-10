@@ -458,8 +458,12 @@ public static class ReservationMenu
             ConsoleHelper.WaitForEnter();
             return;
         }
+        
 
         Console.WriteLine($"  Reservation code: {reservation.ReservationCode}");
+        Console.WriteLine($"  Adults:           {reservation.Adults}");
+        if (reservation.Children > 0)
+        Console.WriteLine($"  Children:         {reservation.Children}");
         Console.WriteLine($"  Check-in:         {reservation.CheckInDate:yyyy-MM-dd}");
         Console.WriteLine($"  Check-out:        {reservation.CheckOutDate:yyyy-MM-dd}");
         Console.WriteLine($"  Status:           {reservation.Status}");
@@ -471,9 +475,7 @@ public static class ReservationMenu
             return;
         }
 
-        string? choice = ReservationInput.ReadText("Enter m to modify this reservation, or q to return: ");
-        if (choice == "m")
-            ModifyReservation(reservation);
+        ConsoleHelper.WaitForEnter();
     }
 
     private static void ModifyReservation(ReservationModel reservation)
