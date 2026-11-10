@@ -1,30 +1,34 @@
-public class UserValidator
+public static class UserValidator
 {
-    public UserRegisterErrors Register(string name, string lastName, string birthDate, string email, string phoneNumber)
+    public static List<string> Register(string name, string lastName, string birthDate, string email, string phoneNumber)
     {
-        if (!ValidateName(name))
-            return UserRegisterErrors.InvalidName;
-        if (!ValidateName(lastName))
-            return UserRegisterErrors.InvalidLastName;
-        if (!ValidateBirthdate(birthDate))
-            return UserRegisterErrors.InvalidBirthDate;
+        List<string> errors = new();
 
-        DateTime date = DateTime.ParseExact(birthDate, "yyyy-MM-dd", null);
+        if (!ValidateName(name))
+            errors.Add("\n  Name must be 3 characters or longer.");
+        if (!ValidateName(lastName))
+            errors.Add("\n  Last name must be 3 characters or longer.");
+        if (!ValidateBirthdate(birthDate))
+            errors.Add("\n  Invalid Birthdate, format must be in yyyy-MM-dd.");
 
         if (!ValidateEmail(email))
-            return UserRegisterErrors.InvalidEmail;
+            errors.Add("\n  Invalid E-Mail.");
         if (UserAccess.GetByEmail(email) != null)
-            return UserRegisterErrors.EmailAlreadyExists;
+            errors.Add("\n  E-Mail already in use.");
         if (!ValidatePhoneNumber(phoneNumber))
-            return UserRegisterErrors.InvalidPhoneNumber;
+            errors.Add("\n  Invalid Phone number.");
         
-        UserModel user = new(name, lastName, email, phoneNumber, date);
+        if (errors.Count == 0)
+        {
+            DateTime date = DateTime.ParseExact(birthDate, "yyyy-MM-dd", null);
+            UserModel user = new(name, lastName, email, phoneNumber, date);
+            UserAccess.Create(user);
+        }
 
-        UserAccess.Create(user);
-        return UserRegisterErrors.Success;
+        return errors;
     }
 
-    public bool ValidateName(string name)
+    public static bool ValidateName(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
             return false;
@@ -34,7 +38,7 @@ public class UserValidator
         return true;
     }
 
-    public bool ValidateBirthdate(string birthDate)
+    public static bool ValidateBirthdate(string birthDate)
     {
         DateTime date;
 
@@ -47,7 +51,7 @@ public class UserValidator
         return true;
     }
 
-    public bool ValidateEmail(string email)
+    public static bool ValidateEmail(string email)
     {
         if (string.IsNullOrWhiteSpace(email)) return false;
         if (!email.Contains("@") || !email.Contains(".")) return false;
@@ -63,7 +67,7 @@ public class UserValidator
         return true;
     }
 
-    public bool ValidatePhoneNumber(string phoneNumber)
+    public static bool ValidatePhoneNumber(string phoneNumber)
     {
             if (string.IsNullOrWhiteSpace(phoneNumber))
                 return false;

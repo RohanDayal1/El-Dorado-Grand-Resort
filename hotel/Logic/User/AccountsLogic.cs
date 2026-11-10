@@ -37,24 +37,26 @@ public class AccountsLogic
         return null;
     }
 
-    public static UserRegisterErrors Register(int userId, string password, string repeatedpassword, string role)
+    public static List<string> Register(int userId, string password, string repeatedpassword, string role)
     {
+        List<string> erros = new();
+
         if (!ValidateUser(userId))
-            return UserRegisterErrors.InvalidUser;
+            erros.Add("\n  User does not exist.");
         if (!ValidatePassword(password))
-            return UserRegisterErrors.InvalidPassword;
+            erros.Add("\n  Invalid password.");
         if (password != repeatedpassword)
-            return UserRegisterErrors.PasswordMismatch;
+            erros.Add("\n  Passwords do not match.");
         if (string.IsNullOrWhiteSpace(role))
-            return UserRegisterErrors.InvalidRole;
-        
-        AccountModel account = new(userId, password, role);
+            erros.Add($"{role} is not a valid role.");
 
-        
-        
-        AccountsAccess.Create(account);
+        if (erros.Count == 0)
+        {
+            AccountModel account = new(userId, password, role);
+            AccountsAccess.Create(account);
+        }
+        return erros;
 
-        return UserRegisterErrors.Success;
     }
 
     public static bool ValidateUser(int userid)
