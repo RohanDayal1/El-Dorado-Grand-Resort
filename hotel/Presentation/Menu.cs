@@ -81,7 +81,7 @@ public static class Menu
 				case "7":
 					if (signedInAccount == null)
 					{
-						ReservationMenu.LookupReservation();
+						ReservationOverview.LookupReservation();
 					}
 					else
 					{
