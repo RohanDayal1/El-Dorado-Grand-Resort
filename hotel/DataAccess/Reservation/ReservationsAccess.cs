@@ -32,14 +32,14 @@ public static class ReservationsAccess
         );
     }
 
-    public static ReservationDetailModel? GetOverviewByEmailAndCode(
+    public static ReservationModel? GetOverviewByEmailAndCode(
         string email,
         string reservationCode
     )
     {
         using var connection = DatabaseInitializer.Connect();
 
-        return connection.QuerySingleOrDefault<ReservationDetailModel>(
+        return connection.QuerySingleOrDefault<ReservationModel>(
             @"
             SELECT r.Reservation_Id AS ReservationId,
                    r.ReservationCode,

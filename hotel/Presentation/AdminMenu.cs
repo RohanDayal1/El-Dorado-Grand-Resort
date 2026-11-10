@@ -155,15 +155,15 @@ public static class AdminMenu
         var allReservation = new AdminLogic().ShowAllReservation();
         foreach (var reservation in allReservation)
         {
-            Console.WriteLine($"  Reservation ID:  {reservation.ReservationId}");
-            Console.WriteLine($"  Code:            {reservation.ReservationCode}");
-            Console.WriteLine($"  Guest:           {reservation.FirstName} {reservation.LastName}");
-            Console.WriteLine($"  Check-in:        {reservation.CheckInDate:yyyy-MM-dd}");
-            Console.WriteLine($"  Check-out:       {reservation.CheckOutDate:yyyy-MM-dd}");
-            Console.WriteLine($"  Adults:          {reservation.Adults}");
-            Console.WriteLine($"  Children:        {reservation.Children}");
-            Console.WriteLine($"  Total:           {reservation.TotalCost:C}");
-            Console.WriteLine($"  Status:          {reservation.Status}");
+            Console.WriteLine($"  Reservation ID:    {reservation.ReservationId}");
+            Console.WriteLine($"  Reservation Code:  {reservation.ReservationCode}");
+            Console.WriteLine($"  Guest:             {reservation.FirstName} {reservation.LastName}");
+            Console.WriteLine($"  Check-in:          {reservation.CheckInDate:yyyy-MM-dd}");
+            Console.WriteLine($"  Check-out:         {reservation.CheckOutDate:yyyy-MM-dd}");
+            Console.WriteLine($"  Adults:            {reservation.Adults}");
+            Console.WriteLine($"  Children:          {reservation.Children}");
+            Console.WriteLine($"  Total:             {reservation.TotalCost:C}");
+            Console.WriteLine($"  Status:            {reservation.Status}");
             Console.WriteLine();
         }
     }
@@ -185,15 +185,15 @@ public static class AdminMenu
         }
 
         Console.WriteLine();
-        Console.WriteLine($"  Reservation ID:  {reservation.ReservationId}");
-        Console.WriteLine($"  Code:            {reservation.ReservationCode}");
-        Console.WriteLine($"  Guest:           {reservation.FirstName} {reservation.LastName}");
-        Console.WriteLine($"  Check-in:        {reservation.CheckInDate:yyyy-MM-dd}");
-        Console.WriteLine($"  Check-out:       {reservation.CheckOutDate:yyyy-MM-dd}");
-        Console.WriteLine($"  Adults:          {reservation.Adults}");
-        Console.WriteLine($"  Children:        {reservation.Children}");
-        Console.WriteLine($"  Total:           {reservation.TotalCost:C}");
-        Console.WriteLine($"  Status:          {reservation.Status}");
+        Console.WriteLine($"  Reservation ID:    {reservation.ReservationId}");
+        Console.WriteLine($"  Reservation Code:  {reservation.ReservationCode}");
+        Console.WriteLine($"  Guest:             {reservation.FirstName} {reservation.LastName}");
+        Console.WriteLine($"  Check-in:          {reservation.CheckInDate:yyyy-MM-dd}");
+        Console.WriteLine($"  Check-out:         {reservation.CheckOutDate:yyyy-MM-dd}");
+        Console.WriteLine($"  Adults:            {reservation.Adults}");
+        Console.WriteLine($"  Children:          {reservation.Children}");
+        Console.WriteLine($"  Total:             {reservation.TotalCost:C}");
+        Console.WriteLine($"  Status:            {reservation.Status}");
     }
 
     public static void ShowEditReservation()
