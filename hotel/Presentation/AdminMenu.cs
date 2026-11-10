@@ -171,14 +171,13 @@ public static class AdminMenu
     public static void ShowReservationDetails()
     {
         ConsoleHelper.ClearScreen();
-        Console.Write("Reservation ID: ");
-        string? id = Console.ReadLine();
-        if (!int.TryParse(id, out int rID))
+        string? rCode = ReadInput("Reservation Code: ");
+        if (rCode == null)
         {
-            Console.WriteLine("invalid id");
             return;
         }
-        ReservationModel? reservation = new AdminLogic().GetReservation(rID);
+
+        ReservationModel? reservation = new AdminLogic().GetReservation(rCode);
         if (reservation == null)
         {
             Console.WriteLine("Reservation doesn't exist");
@@ -188,7 +187,7 @@ public static class AdminMenu
         Console.WriteLine();
         Console.WriteLine($"  Reservation ID:  {reservation.ReservationId}");
         Console.WriteLine($"  Code:            {reservation.ReservationCode}");
-        Console.WriteLine($"  User ID:         {reservation.UserId}");
+        Console.WriteLine($"  Guest:           {reservation.FirstName} {reservation.LastName}");
         Console.WriteLine($"  Check-in:        {reservation.CheckInDate:yyyy-MM-dd}");
         Console.WriteLine($"  Check-out:       {reservation.CheckOutDate:yyyy-MM-dd}");
         Console.WriteLine($"  Adults:          {reservation.Adults}");
@@ -200,12 +199,9 @@ public static class AdminMenu
     public static void ShowEditReservation()
     {
         ConsoleHelper.ClearScreen();
-        Console.Write("Reservation ID: ");
-        string? id = Console.ReadLine();
-
-        if (!int.TryParse(id, out int reservationId))
+        string? rCode = ReadInput("Reservation Code: ");
+        if (rCode == null)
         {
-            Console.WriteLine("not a valid number!");
             return;
         }
 
@@ -225,20 +221,20 @@ public static class AdminMenu
             return;
         }
         
-        string result = new AdminLogic().EditReservation(reservationId, newCheckInDate, newCheckOutDate);
+        string result = new AdminLogic().EditReservation(rCode, newCheckInDate, newCheckOutDate);
         Console.WriteLine(result);
     }
 
     public static void ShowCancelReservation()
     {
         ConsoleHelper.ClearScreen();
-        int? reservation = ReservationInput.ReadInt("Reservation ID: ");
-        if (reservation == null)
+        string? rCode = ReadInput("Reservation Code: ");
+        if (rCode == null)
         {
             return;
         }
 
-        string result = new AdminLogic().CancelReservation(reservation.Value);
+        string result = new AdminLogic().CancelReservation(rCode);
         Console.WriteLine(result);
     }
 
@@ -330,11 +326,17 @@ public static class AdminMenu
         while (true)
         {
             ConsoleHelper.ClearScreen();
-            Console.Write("RoomType Name: ");
-            string RoomTypeName = Console.ReadLine()?.Trim() ?? string.Empty;
+            string? RoomTypeName = ReadInput("Roomtype Name: ");
+            if (RoomTypeName == null)
+            {
+                return;
+            }
 
-            Console.Write("Description: ");
-            string RoomTypeDescription = Console.ReadLine()?.Trim() ?? string.Empty;
+            string? RoomTypeDescription = ReadInput("Description: ");
+            if (RoomTypeDescription == null)
+            {
+                return;
+            }
 
             int Capacity = ReadInputInt("Capacity: ");
 
@@ -351,8 +353,11 @@ public static class AdminMenu
                 break;
             }
 
-            Console.Write("BedType: ");
-            string BedType = Console.ReadLine()?.Trim() ?? string.Empty;
+            string? BedType = ReadInput("Bedtype: ");
+            if (BedType == null)
+            {
+                return;
+            }
             
             RoomTypeModel roomtype = new RoomTypeModel 
                                     {
@@ -490,11 +495,17 @@ public static class AdminMenu
                 continue;
             }
 
-            Console.Write("New roomtype Name: ");
-            string newRoomTypeName = Console.ReadLine()?.Trim() ?? string.Empty;
+            string? newRoomTypeName = ReadInput("New roomtype name: ");
+            if (newRoomTypeName == null)
+            {
+                return;
+            }
 
-            Console.Write("New Description: ");
-            string NewRoomTypeDescription = Console.ReadLine()?.Trim() ?? string.Empty;
+            string? NewRoomTypeDescription = ReadInput("New description: ");
+            if (NewRoomTypeDescription == null)
+            {
+                return;
+            }
 
             int newCapacity = ReadInputInt("New capacity: ");
 
@@ -511,8 +522,11 @@ public static class AdminMenu
                 break;
             }
 
-            Console.Write("new Bedtype: ");
-            string newBedType = Console.ReadLine()?.Trim() ?? string.Empty;
+            string? newBedType = ReadInput("New bedtype: ");
+            if (newBedType == null)
+            {
+                return;
+            }
 
             RoomTypeModel roomtype = new RoomTypeModel 
                                     {   Room_Type_Id = roomTypeId,
@@ -611,10 +625,13 @@ public static class AdminMenu
 
     public static string? ReadInput(string message)
     {
-        Console.WriteLine($"{message}");
-        string? input = Console.ReadLine()?.Trim().ToLower();
-        if (input == null || input == "q") {return null;}
-        return input;
+        while (true)
+        {
+            Console.Write($"{message}");
+            string? input = Console.ReadLine()?.Trim();
+            if (input == null || input == "q" || input == "Q") {return null;}
+            return input;
+        }
     }
 
     public static int ReadInputInt(string message)
@@ -652,42 +669,5 @@ public static class AdminMenu
                 return false;
             Console.WriteLine("Invalid input");
         }
-    }
-
-    public static void test()
-    {
-        Console.Write("New roomtype Name: ");
-        string newRoomTypeName = Console.ReadLine()?.Trim() ?? string.Empty;
-
-        Console.Write("New Description: ");
-        string NewRoomTypeDescription = Console.ReadLine()?.Trim() ?? string.Empty;
-
-        int newCapacity = ReadInputInt("New capacity: ");
-
-        decimal newPricePerNight;
-        while (true)
-        {
-            Console.Write("New price per night: ");
-            string? inputPrice = Console.ReadLine()?.Trim();
-            if (!decimal.TryParse(inputPrice, out newPricePerNight))
-            {
-                Console.WriteLine("Invalid input");
-                continue;
-            }
-            break;
-        }
-
-        Console.Write("new Bedtype: ");
-        string newBedType = Console.ReadLine()?.Trim() ?? string.Empty;
-
-        RoomTypeModel roomtype = new RoomTypeModel 
-                                {
-                                    Name = newRoomTypeName, 
-                                    Description = NewRoomTypeDescription, 
-                                    Capacity = newCapacity, 
-                                    PricePerNight = newPricePerNight, 
-                                    BedType = newBedType
-                                };
-        AdminAccess.EditRoomTypeInformation(roomtype);
     }
 }

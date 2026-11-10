@@ -21,14 +21,14 @@ public class AdminLogic
         return AdminAccess.GetAllReservation();
     }
 
-    public ReservationModel? GetReservation(int id)
+    public ReservationModel? GetReservation(string reservationcode)
     {
-        return AdminAccess.GetReservation(id);
+        return AdminAccess.GetReservation(reservationcode);
     }
 
-    public string CancelReservation(int reservationid)
+    public string CancelReservation(string reservationcode)
     {
-        var reservation = AdminAccess.GetReservation(reservationid);
+        var reservation = AdminAccess.GetReservation(reservationcode);
         if (reservation == null)
         {
             return "Reservation doesn't exist";
@@ -37,13 +37,13 @@ public class AdminLogic
         {
             return "Reservation already cancelled";
         }
-        AdminAccess.CancelReservation(reservationid);
+        AdminAccess.CancelReservation(reservationcode);
         return "Reservation cancelled";
     }
 
-    public string EditReservation(int reservationId, DateTime newCheckInDate, DateTime newCheckOutDate)
+    public string EditReservation(string reservationcode, DateTime newCheckInDate, DateTime newCheckOutDate)
     {
-        var currentReservation = AdminAccess.GetReservation(reservationId);
+        var currentReservation = AdminAccess.GetReservation(reservationcode);
         if (currentReservation == null)
         {
             return "Reservation doesn't exist";
@@ -60,12 +60,12 @@ public class AdminLogic
         }
 
         Dictionary<int, int> roomIdReplacements = new();
-        List<int> currentRoomIds = AdminAccess.GetRoomIdsByReservationId(reservationId).ToList();
+        List<int> currentRoomIds = AdminAccess.GetRoomIdsByReservationId(currentReservation.ReservationId).ToList();
         foreach (var roomId in currentRoomIds)
         {
             bool foundOtherRoom = false;
             
-            bool currentRoomisFree = IsRoomFree(roomId, newCheckInDate, newCheckOutDate, reservationId);
+            bool currentRoomisFree = IsRoomFree(roomId, newCheckInDate, newCheckOutDate, currentReservation.ReservationId);
             if (!currentRoomisFree)
             {
                 List<int> otherRooms = AdminAccess.GetRoomOfSameType(roomId).ToList();
@@ -76,7 +76,7 @@ public class AdminLogic
                     {
                         continue;
                     }
-                    bool isOtherRoomFree = IsRoomFree(otherRoomId, newCheckInDate, newCheckOutDate, reservationId);
+                    bool isOtherRoomFree = IsRoomFree(otherRoomId, newCheckInDate, newCheckOutDate, currentReservation.ReservationId);
                     if (isOtherRoomFree)
                     {
                         foundOtherRoom = true;

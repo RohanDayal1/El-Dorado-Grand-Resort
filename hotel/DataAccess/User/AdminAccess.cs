@@ -43,7 +43,27 @@ public static class AdminAccess
         return AllReservation;
     }
 
-    public static ReservationModel? GetReservation(int id)
+    // public static ReservationModel? GetReservation(int id)
+    // {
+    //     using var connection = DatabaseInitializer.Connect();
+    //     connection.Open();
+
+    //     const string sql = @"SELECT Reservation_Id AS ReservationId,
+    //                         ReservationCode,
+    //                         User_Id AS UserId,
+    //                         CheckInDate,
+    //                         CheckOutDate,
+    //                         Adults,
+    //                         Children,
+    //                         TotalCost,
+    //                         Status
+    //                         FROM Reservation
+    //                         WHERE Reservation_Id = @reservationid";
+    //     ReservationModel? reservation = connection.QueryFirstOrDefault<ReservationModel>(sql, new {reservationid = id});
+    //     return reservation;
+    // }
+
+    public static ReservationModel? GetReservation(string reservationcode)
     {
         using var connection = DatabaseInitializer.Connect();
         connection.Open();
@@ -58,17 +78,17 @@ public static class AdminAccess
                             TotalCost,
                             Status
                             FROM Reservation
-                            WHERE Reservation_Id = @reservationid";
-        ReservationModel? reservation = connection.QueryFirstOrDefault<ReservationModel>(sql, new {reservationid = id});
+                            WHERE ReservationCode = @reservationCode";
+        ReservationModel? reservation = connection.QueryFirstOrDefault<ReservationModel>(sql, new {reservationCode = reservationcode});
         return reservation;
     }
 
-    public static void CancelReservation(int id)
+    public static void CancelReservation(string reservationcode)
     {
         using var connection = DatabaseInitializer.Connect();
         connection.Open();
-        const string sql = @"UPDATE Reservation SET Status = 'cancelled' WHERE Reservation_Id = @ReservationId";
-        connection.Execute(sql, new {ReservationId = id});
+        const string sql = @"UPDATE Reservation SET Status = 'cancelled' WHERE ReservationCode = @reservationCode";
+        connection.Execute(sql, new {reservationCode = reservationcode});
     }
 
     public static void SaveReservationEdit(ReservationModel reservation, Dictionary<int, int> roomIdReplacements)
