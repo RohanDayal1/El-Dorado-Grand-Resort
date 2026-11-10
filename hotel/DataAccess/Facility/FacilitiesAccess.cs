@@ -2,16 +2,20 @@ using Dapper;
 
 public static class FacilitiesAccess
 {
+    private const string FacilityColumns = @"
+            Facility_Id AS FacilityId, Name, Description, Capacity,
+            '0001-01-01 ' || OpeningHours AS OpeningHours,
+            '0001-01-01 ' || ClosingHours AS ClosingHours,
+            Location";
+
     public static List<FacilityModel> GetAll()
     {
         using var connection = DatabaseInitializer.Connect();
 
         return connection
             .Query<FacilityModel>(
-                @"
-            SELECT Facility_Id AS FacilityId, Name, Description,
-                   Capacity, '0001-01-01 ' || OpeningHours AS OpeningHours,
-                   '0001-01-01 ' || ClosingHours AS ClosingHours, Location
+                $@"
+            SELECT {FacilityColumns}
             FROM Facility
             ORDER BY Facility_Id;"
             )
@@ -23,10 +27,8 @@ public static class FacilitiesAccess
         using var connection = DatabaseInitializer.Connect();
 
         return connection.QueryFirstOrDefault<FacilityModel>(
-            @"
-            SELECT Facility_Id AS FacilityId, Name, Description,
-                   Capacity, '0001-01-01 ' || OpeningHours AS OpeningHours,
-                   '0001-01-01 ' || ClosingHours AS ClosingHours, Location
+            $@"
+            SELECT {FacilityColumns}
             FROM Facility
             WHERE Facility_Id = @FacilityId;",
             new { FacilityId = facilityId }
