@@ -29,14 +29,7 @@ public static class Menu
 					});
 					break;
 				case "2":
-					ShowPage("OUR FACILITIES", new[]
-					{
-						"Enjoy everything you need for a comfortable stay:",
-						"  - Comfortable guest rooms",
-						"  - Swimming pool",
-						"  - Restaurant",
-						"  - Wellness facilities"
-					});
+					FacilitiesMenu.Start(signedInAccount);
 					break;
 				case "3":
 					ShowPage("CONTACT US", new[]
@@ -86,7 +79,14 @@ public static class Menu
 					}
 					break;
 				case "7":
-					ReservationMenu.Start(signedInAccount);
+					if (signedInAccount == null)
+					{
+						ReservationOverview.LookupReservation();
+					}
+					else
+					{
+						ReservationMenu.Start(signedInAccount);
+					}
 					break;
 				case "8":
 					if (new AdminLogic().IsAdmin(signedInAccount))
@@ -135,7 +135,10 @@ public static class Menu
 			Console.WriteLine("  [6] View reservation (reservation code required)");
 		}
 		Console.WriteLine(signedInAccount == null
-			? "  [7] Make a reservation (guest checkout)"
+			? "  [6] Make a reservation (guest checkout)"
+			: "  [6] View my reservations");
+		Console.WriteLine(signedInAccount == null
+			? "  [7] Reservation overview (email + code)"
 			: "  [7] Make a reservation");
 		if (new AdminLogic().IsAdmin(signedInAccount))
 		{
@@ -209,8 +212,6 @@ public static class Menu
 		Console.WriteLine("  Welcome to your resort homepage!");
 		Console.WriteLine("  Discover our comfortable rooms, swimming pool,");
 		Console.WriteLine("  restaurant and wellness facilities.");
-		Console.WriteLine();
-		Console.WriteLine("  Choose [6] from the home menu to see your reservations.");
 		Console.WriteLine();
 		Console.WriteLine(Border);
 		Console.Write("  Press Enter to continue to the home menu...");

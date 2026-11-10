@@ -3,6 +3,20 @@ using Microsoft.Data.Sqlite;
 
 public static class ReservationsAccess
 {
+    public static ReservationModel? GetById(int reservationId)
+    {
+        using var connection = DatabaseInitializer.Connect();
+
+        return connection.QueryFirstOrDefault<ReservationModel>(
+            @"
+            SELECT Reservation_Id AS ReservationId, ReservationCode, User_Id AS UserId,
+                   CheckInDate, CheckOutDate, Adults, Children, TotalCost, Status
+            FROM Reservation
+            WHERE Reservation_Id = @ReservationId;",
+            new { ReservationId = reservationId }
+        );
+    }
+
     public static IEnumerable<ReservationModel> GetByUserId(int userId)
     {
         using var connection = DatabaseInitializer.Connect();
@@ -15,6 +29,33 @@ public static class ReservationsAccess
             WHERE User_Id = @UserId
             ORDER BY CheckInDate;",
             new { UserId = userId }
+        );
+    }
+
+    public static ReservationDetailModel? GetOverviewByEmailAndCode(
+        string email,
+        string reservationCode
+    )
+    {
+        using var connection = DatabaseInitializer.Connect();
+
+        return connection.QuerySingleOrDefault<ReservationDetailModel>(
+            @"
+            SELECT r.Reservation_Id AS ReservationId,
+                   r.ReservationCode,
+                   u.First_Name AS FirstName,
+                   u.Last_Name AS LastName,
+                   r.CheckInDate,
+                   r.CheckOutDate,
+                   r.Adults,
+                   r.Children,
+                   r.TotalCost,
+                   r.Status
+            FROM Reservation r
+            JOIN User u ON u.User_Id = r.User_Id
+            WHERE lower(u.Email) = lower(@Email)
+              AND upper(r.ReservationCode) = upper(@ReservationCode);",
+            new { Email = email.Trim(), ReservationCode = reservationCode.Trim() }
         );
     }
 

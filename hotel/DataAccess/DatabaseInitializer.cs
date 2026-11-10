@@ -87,8 +87,8 @@ public static class DatabaseInitializer
                 Name TEXT NOT NULL,
                 Description TEXT,
                 Capacity INTEGER NOT NULL DEFAULT 20 CHECK (Capacity > 0),
-                OpeningHours TEXT,
-                ClosingHours TEXT,
+                OpeningHours TEXT NOT NULL,
+                ClosingHours TEXT NOT NULL,
                 Location TEXT
             );
 
@@ -106,7 +106,7 @@ public static class DatabaseInitializer
                 Name TEXT NOT NULL,
                 Description TEXT,
                 Capacity INTEGER NOT NULL CHECK (Capacity > 0),
-                OpeningHours TEXT,
+                OpeningHours TEXT NOT NULL,
                 Location TEXT
             );
 
@@ -146,8 +146,6 @@ public static class DatabaseInitializer
             CREATE INDEX IX_Facility_Reservation_Facility_Date_Status
                 ON Facility_Reservation (Facility_Id, ReservationDate, Status);
 
-            CREATE INDEX IX_Facility_Reservation_Reservation
-                ON Facility_Reservation (Reservation_Id);
         ");
 
         connection.Execute(@"

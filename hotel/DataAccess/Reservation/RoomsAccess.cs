@@ -44,4 +44,19 @@ public static class RoomsAccess
             )
             .ToList();
     }
+
+    public static List<RoomModel> GetByReservationId(int reservationId)
+    {
+        using var connection = DatabaseInitializer.Connect();
+
+        return connection.Query<RoomModel>(
+            @"
+            SELECT rm.Room_Id AS RoomId, rm.Room_Type_Id, rm.RoomNumber
+            FROM Reservation_Room rr
+            JOIN Room rm ON rm.Room_Id = rr.Room_Id
+            WHERE rr.Reservation_Id = @ReservationId
+            ORDER BY rm.RoomNumber;",
+            new { ReservationId = reservationId }
+        ).ToList();
+    }
 }
