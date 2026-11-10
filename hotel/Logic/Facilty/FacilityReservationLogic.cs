@@ -1,5 +1,10 @@
 public class FacilityReservationLogic
 {
+    public List<FacilityReservationModel> GetByReservationId(int reservationId)
+    {
+        return FacilityReservationsAccess.GetByReservationId(reservationId);
+    }
+
     public List<ReservationModel> GetFacilityReservations(AccountModel account, DateTime now)
     {
         return ReservationsAccess
