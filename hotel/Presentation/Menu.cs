@@ -71,11 +71,11 @@ public static class Menu
 				case "6":
 					if (signedInAccount == null)
 					{
-						ReservationMenu.FindGuestReservation();
+						ReservationMenu.Start();
 					}
 					else
 					{
-						ReservationMenu.ShowReservations(signedInAccount);
+						ReservationPresentation.ShowReservations(signedInAccount);
 					}
 					break;
 				case "7":
@@ -126,14 +126,6 @@ public static class Menu
 		Console.WriteLine("  [3] Contact us");
 		Console.WriteLine(signedInAccount == null ? "  [4] Login" : "  [4] My home");
 		Console.WriteLine(signedInAccount == null ? "  [5] Register" : "  [5] Log out");
-		if (signedInAccount != null)
-		{
-			Console.WriteLine("  [6] View my reservations");
-		}
-		else
-		{
-			Console.WriteLine("  [6] View reservation (reservation code required)");
-		}
 		Console.WriteLine(signedInAccount == null
 			? "  [6] Make a reservation (guest checkout)"
 			: "  [6] View my reservations");
