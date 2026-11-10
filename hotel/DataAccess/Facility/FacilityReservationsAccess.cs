@@ -76,6 +76,33 @@ public static class FacilityReservationsAccess
             .ToList();
     }
 
+    public static List<FacilityReservationModel> GetByReservationId(int reservationId)
+    {
+        using var connection = DatabaseInitializer.Connect();
+
+        return connection.Query<FacilityReservationModel>(
+            @"
+            SELECT fr.Facility_Reservation_Id AS FacilityReservationId,
+                   fr.Account_Id AS AccountId,
+                   fr.Reservation_Id AS ReservationId,
+                   fr.Facility_Id AS FacilityId,
+                   fr.Facility_Service_Id AS FacilityServiceId,
+                   fr.ReservationDate,
+                   fr.ReservationDate || ' ' || fr.StartTime AS StartTime,
+                   fr.ReservationDate || ' ' || fr.EndTime AS EndTime,
+                   fr.PartySize,
+                   fr.Status,
+                   f.Name AS FacilityName,
+                   fs.Name AS ServiceName
+            FROM Facility_Reservation fr
+            JOIN Facility f ON f.Facility_Id = fr.Facility_Id
+            JOIN Facility_Service fs ON fs.Facility_Service_Id = fr.Facility_Service_Id
+            WHERE fr.Reservation_Id = @ReservationId
+            ORDER BY fr.ReservationDate, fr.StartTime, fr.Facility_Reservation_Id;",
+            new { ReservationId = reservationId }
+        ).ToList();
+    }
+
     public static int InsertReservation(FacilityReservationModel booking)
     {
         using var connection = DatabaseInitializer.Connect();
