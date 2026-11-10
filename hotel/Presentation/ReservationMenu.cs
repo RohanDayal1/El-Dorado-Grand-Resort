@@ -71,6 +71,7 @@ public static class ReservationMenu
         {
             ShowLookupMessage("Enter both your email address and reservation code.");
             ConsoleHelper.WaitForEnter();
+            ConsoleHelper.ClearScreen();
             return;
         }
 
@@ -80,6 +81,7 @@ public static class ReservationMenu
         {
             ShowLookupMessage("No reservation matched that email address and code.");
             ConsoleHelper.WaitForEnter();
+            ConsoleHelper.ClearScreen();
             return;
         }
 
@@ -98,10 +100,11 @@ public static class ReservationMenu
 
     private static void ShowReservationOverview(ReservationDetailModel reservation)
     {
-        List<RoomTypeModel> roomTypes = RoomsAccess.GetRoomTypes();
-        List<RoomModel> rooms = RoomsAccess.GetByReservationId(reservation.ReservationId);
-        List<FacilityReservationModel> facilities =
-            FacilityReservationsAccess.GetByReservationId(reservation.ReservationId);
+        var roomsLogic = new RoomsLogic();
+        List<RoomTypeModel> roomTypes = roomsLogic.GetRoomTypes();
+        List<RoomModel> rooms = roomsLogic.GetByReservationId(reservation.ReservationId);
+        List<FacilityReservationModel> facilities = new FacilityReservationLogic()
+            .GetByReservationId(reservation.ReservationId);
 
         ConsoleHelper.ClearScreen();
         Console.WriteLine(Border);
@@ -168,6 +171,7 @@ public static class ReservationMenu
         Console.WriteLine();
         Console.Write("  Press Enter to return to the home menu...");
         Console.ReadLine();
+        ConsoleHelper.ClearScreen();
     }
 
     public static void Start(AccountModel? account = null)
