@@ -71,7 +71,7 @@ public static class Menu
 				case "6":
 					if (signedInAccount == null)
 					{
-						ShowPage("LOGIN REQUIRED", new[] { "Please log in to view your reservations." });
+						ReservationMenu.Start();
 					}
 					else
 					{
@@ -79,7 +79,14 @@ public static class Menu
 					}
 					break;
 				case "7":
-					ReservationMenu.Start(signedInAccount);
+					if (signedInAccount == null)
+					{
+						ReservationOverview.LookupReservation();
+					}
+					else
+					{
+						ReservationMenu.Start(signedInAccount);
+					}
 					break;
 				case "8":
 					if (new AdminLogic().IsAdmin(signedInAccount))
@@ -119,12 +126,11 @@ public static class Menu
 		Console.WriteLine("  [3] Contact us");
 		Console.WriteLine(signedInAccount == null ? "  [4] Login" : "  [4] My home");
 		Console.WriteLine(signedInAccount == null ? "  [5] Register" : "  [5] Log out");
-		if (signedInAccount != null)
-		{
-			Console.WriteLine("  [6] View my reservations");
-		}
 		Console.WriteLine(signedInAccount == null
-			? "  [7] Make a reservation (guest checkout)"
+			? "  [6] Make a reservation (guest checkout)"
+			: "  [6] View my reservations");
+		Console.WriteLine(signedInAccount == null
+			? "  [7] Reservation overview (email + code)"
 			: "  [7] Make a reservation");
 		if (new AdminLogic().IsAdmin(signedInAccount))
 		{

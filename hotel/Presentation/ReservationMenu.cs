@@ -184,7 +184,7 @@ public static class ReservationMenu
             return;
         }
 
-        ShowConfirmation(confirmed);
+        ShowConfirmation(confirmed, user.Email);
     }
 
     private static (DateTime CheckInDate, DateTime CheckOutDate)? ReadStayDates(DateTime today)
@@ -291,17 +291,19 @@ public static class ReservationMenu
         }
     }
 
-    private static void ShowConfirmation(ReservationModel reservation)
+    private static void ShowConfirmation(ReservationModel reservation, string email)
     {
         ConsoleHelper.ClearScreen();
         Console.WriteLine(Border);
         Console.WriteLine("  EL DORADO GRAND RESORT  |  RESERVATION CONFIRMED");
         Console.WriteLine(Border);
         Console.WriteLine($"\n  Reservation code: {reservation.ReservationCode}");
+        Console.WriteLine($"  Email:            {email}");
         Console.WriteLine($"  Check-in:         {reservation.CheckInDate:yyyy-MM-dd}");
         Console.WriteLine($"  Check-out:        {reservation.CheckOutDate:yyyy-MM-dd}");
         Console.WriteLine($"  Total:            {reservation.TotalCost:C}");
-        Console.WriteLine("  Keep your reservation code for reference.");
+        Console.WriteLine("  Use this email address and reservation code in the overview menu");
+        Console.WriteLine("  to view your reservation details.");
         ConsoleHelper.WaitForEnter();
     }
 

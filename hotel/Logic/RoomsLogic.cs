@@ -5,6 +5,11 @@ public class RoomsLogic
         return RoomsAccess.GetRoomTypes();
     }
 
+    public List<RoomModel> GetByReservationId(int reservationId)
+    {
+        return RoomsAccess.GetByReservationId(reservationId);
+    }
+
     public List<RoomModel> GetAvailableRooms(DateTime checkInDate, DateTime checkOutDate)
     {
         return RoomsAccess.GetAvailableRooms(checkInDate, checkOutDate);
