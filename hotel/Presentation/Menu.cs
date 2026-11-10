@@ -29,14 +29,7 @@ public static class Menu
 					});
 					break;
 				case "2":
-					ShowPage("OUR FACILITIES", new[]
-					{
-						"Enjoy everything you need for a comfortable stay:",
-						"  - Comfortable guest rooms",
-						"  - Swimming pool",
-						"  - Restaurant",
-						"  - Wellness facilities"
-					});
+					FacilitiesMenu.Start(signedInAccount);
 					break;
 				case "3":
 					ShowPage("CONTACT US", new[]
@@ -205,8 +198,6 @@ public static class Menu
 		Console.WriteLine("  Welcome to your resort homepage!");
 		Console.WriteLine("  Discover our comfortable rooms, swimming pool,");
 		Console.WriteLine("  restaurant and wellness facilities.");
-		Console.WriteLine();
-		Console.WriteLine("  Choose [6] from the home menu to see your reservations.");
 		Console.WriteLine();
 		Console.WriteLine(Border);
 		Console.Write("  Press Enter to continue to the home menu...");

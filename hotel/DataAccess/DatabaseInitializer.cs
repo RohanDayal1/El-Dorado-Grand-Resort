@@ -3,7 +3,7 @@ using Microsoft.Data.Sqlite;
 
 public static class DatabaseInitializer
 {
-    private const string ConnectionString = "Data Source=DataSources/el_dorado.db";
+    private const string ConnectionString = "Data Source=DataSources/el_dorado.db;Foreign Keys=True";
     public static SqliteConnection Connect() => new SqliteConnection(ConnectionString);
 
     public static void ResetDatabase()
@@ -13,6 +13,7 @@ public static class DatabaseInitializer
 
         connection.Execute(@"
             DROP TABLE IF EXISTS Facility_Reservation;
+            DROP TABLE IF EXISTS Facility_Service;
             DROP TABLE IF EXISTS Activity_Reservation;
             DROP TABLE IF EXISTS Reservation_Room;
             DROP TABLE IF EXISTS Reservation;
@@ -85,9 +86,19 @@ public static class DatabaseInitializer
                 Facility_Id INTEGER PRIMARY KEY,
                 Name TEXT NOT NULL,
                 Description TEXT,
-                OpeningHours TEXT,
-                ClosingHours TEXT,
+                Capacity INTEGER NOT NULL DEFAULT 20 CHECK (Capacity > 0),
+                OpeningHours TEXT NOT NULL,
+                ClosingHours TEXT NOT NULL,
                 Location TEXT
+            );
+
+            CREATE TABLE Facility_Service (
+                Facility_Service_Id INTEGER PRIMARY KEY,
+                Facility_Id INTEGER NOT NULL,
+                Name TEXT NOT NULL,
+                Description TEXT,
+                DurationMinutes INTEGER NOT NULL CHECK (DurationMinutes > 0),
+                FOREIGN KEY (Facility_Id) REFERENCES Facility(Facility_Id) ON DELETE RESTRICT
             );
 
             CREATE TABLE Activity (
@@ -95,22 +106,27 @@ public static class DatabaseInitializer
                 Name TEXT NOT NULL,
                 Description TEXT,
                 Capacity INTEGER NOT NULL CHECK (Capacity > 0),
-                OpeningHours TEXT,
+                OpeningHours TEXT NOT NULL,
                 Location TEXT
             );
 
             CREATE TABLE Facility_Reservation (
                 Facility_Reservation_Id INTEGER PRIMARY KEY,
                 Account_Id INTEGER NOT NULL,
+                Reservation_Id INTEGER NOT NULL,
                 Facility_Id INTEGER NOT NULL,
+                Facility_Service_Id INTEGER NOT NULL,
                 ReservationDate TEXT NOT NULL,
                 StartTime TEXT NOT NULL,
                 EndTime TEXT NOT NULL,
                 PartySize INTEGER NOT NULL CHECK (PartySize > 0),
                 Status TEXT NOT NULL DEFAULT 'confirmed'
                     CHECK (Status IN ('confirmed','cancelled')),
+                CHECK (EndTime > StartTime),
                 FOREIGN KEY (Account_Id) REFERENCES Account(Account_Id) ON DELETE RESTRICT,
-                FOREIGN KEY (Facility_Id) REFERENCES Facility(Facility_Id) ON DELETE RESTRICT
+                FOREIGN KEY (Reservation_Id) REFERENCES Reservation(Reservation_Id) ON DELETE RESTRICT,
+                FOREIGN KEY (Facility_Id) REFERENCES Facility(Facility_Id) ON DELETE RESTRICT,
+                FOREIGN KEY (Facility_Service_Id) REFERENCES Facility_Service(Facility_Service_Id) ON DELETE RESTRICT
             );
 
             CREATE TABLE Activity_Reservation (
@@ -126,6 +142,10 @@ public static class DatabaseInitializer
                 FOREIGN KEY (Account_Id) REFERENCES Account(Account_Id) ON DELETE RESTRICT,
                 FOREIGN KEY (Activity_Id) REFERENCES Activity(Activity_Id) ON DELETE RESTRICT
             );
+
+            CREATE INDEX IX_Facility_Reservation_Facility_Date_Status
+                ON Facility_Reservation (Facility_Id, ReservationDate, Status);
+
         ");
 
         connection.Execute(@"
@@ -166,19 +186,23 @@ public static class DatabaseInitializer
             INSERT INTO Reservation_Room (Reservation_Id, Room_Id) VALUES
                 (1, 1), (2, 5), (3, 2), (3, 3), (4, 6);
 
-            INSERT INTO Facility (Facility_Id, Name, Description, OpeningHours, ClosingHours, Location) VALUES
-                (1, 'Swimming Pool', 'Indoor heated swimming pool', '07:00', '22:00', 'Ground floor'),
-                (2, 'Spa', 'Relaxation and wellness treatments', '09:00', '20:00', 'First floor'),
-                (3, 'Restaurant', 'Breakfast, lunch and dinner', '07:00', '23:00', 'Ground floor');
+            INSERT INTO Facility (Facility_Id, Name, Description, Capacity, OpeningHours, ClosingHours, Location) VALUES
+                (1, 'Swimming Pool', 'Indoor heated swimming pool', 20, '07:00', '22:00', 'Ground floor'),
+                (2, 'Spa', 'Relaxation and wellness treatments', 20, '09:00', '20:00', 'First floor'),
+                (3, 'Restaurant', 'Breakfast, lunch and dinner', 20, '07:00', '23:00', 'Ground floor');
+
+            INSERT INTO Facility_Service (Facility_Service_Id, Facility_Id, Name, Description, DurationMinutes) VALUES
+                (1, 2, '60-minute massage', 'Relaxing full-body massage', 60),
+                (2, 2, '90-minute treatment', 'Extended spa and wellness treatment', 90);
 
             INSERT INTO Activity (Activity_Id, Name, Description, Capacity, OpeningHours, Location) VALUES
                 (1, 'Yoga', 'Guided morning yoga session', 20, '08:00', 'Garden'),
                 (2, 'City Tour', 'Guided tour of the city', 15, '10:00', 'Main entrance');
 
             INSERT INTO Facility_Reservation
-                (Facility_Reservation_Id, Account_Id, Facility_Id, ReservationDate, StartTime, EndTime, PartySize, Status) VALUES
-                (1, 2, 2, '2026-11-02', '10:00', '11:00', 2, 'confirmed'),
-                (2, 3, 3, '2026-11-10', '18:00', '19:30', 4, 'cancelled');
+                (Facility_Reservation_Id, Account_Id, Reservation_Id, Facility_Id, Facility_Service_Id, ReservationDate, StartTime, EndTime, PartySize, Status) VALUES
+                (1, 2, 1, 2, 1, '2026-11-02', '10:00', '11:00', 2, 'confirmed'),
+                (2, 3, 2, 2, 2, '2026-11-10', '18:00', '19:30', 4, 'cancelled');
 
             INSERT INTO Activity_Reservation
                 (Activity_Reservation_Id, Account_Id, Activity_Id, ReservationDate, StartTime, EndTime, PartySize, Status) VALUES
