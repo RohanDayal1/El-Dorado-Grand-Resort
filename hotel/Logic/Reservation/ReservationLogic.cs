@@ -5,6 +5,14 @@ public class ReservationLogic
         return ReservationsAccess.GetByUserId(userId);
     }
 
+    public ReservationOverviewModel? GetOverviewByEmailAndCode(
+        string email,
+        string reservationCode
+    )
+    {
+        return ReservationsAccess.GetOverviewByEmailAndCode(email, reservationCode);
+    }
+
     public List<ReservationDateErrors> ValidateDates(
         DateTime checkInDate,
         DateTime checkOutDate,
