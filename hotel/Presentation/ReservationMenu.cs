@@ -2,7 +2,6 @@ public static class ReservationMenu
 {
     private const string Border = "============================================================";
 
-
     public static void Start(AccountModel? account = null)
     {
         ConsoleHelper.ShowHeader("MAKE A RESERVATION");

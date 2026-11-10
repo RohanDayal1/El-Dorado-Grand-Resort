@@ -2,6 +2,7 @@ public static class ReservationPresentation
 {
     private const string Border = "============================================================";
 
+    
     public static void ShowReservations(AccountModel account)
     {
         ConsoleHelper.ClearScreen();
@@ -15,67 +16,97 @@ public static class ReservationPresentation
         List<ReservationModel> reservations = new ReservationLogic()
             .GetByUserId(account.UserId)
             .ToList();
-        var facilityBookings = new FacilityReservationLogic().GetByUserId(account.UserId);
+
+        List<FacilityReservationModel> facilityBookings =
+            new FacilityReservationLogic().GetByUserId(account.UserId);
 
         if (reservations.Count == 0)
         {
             Console.WriteLine("No reservations were found for your account.");
             ConsoleHelper.WaitForEnter();
+            return;
         }
-        else
+
+        string input = "";
+
+        while (input.ToLower() != "q")
         {
-            string input = "";
-            while (input.ToLower() != "q")
+            Console.Clear();
+
+            int counter = 1;
+
+            Console.WriteLine(Border);
+            Console.WriteLine(
+                $"  EL DORADO GRAND RESORT  |  RESERVATIONS FOR {(account.FirstName + " " + account.LastName).ToUpper()}"
+            );
+            Console.WriteLine(Border);
+            Console.WriteLine();
+
+            foreach (ReservationModel reservation in reservations)
             {
-                Console.Clear();
-
-                int counter = 1;
-
                 Console.WriteLine(Border);
-                Console.WriteLine(
-                    $"  EL DORADO GRAND RESORT  |  RESERVATIONS FOR {(account.FirstName + " " + account.LastName).ToUpper()}"
-                );
-                Console.WriteLine(Border);
+                Console.WriteLine($"[{counter}]");
+                Console.WriteLine();
+                Console.WriteLine($"  Reservation ID:   {reservation.ReservationId}");
+                Console.WriteLine($"  Reservation code: {reservation.ReservationCode}");
+                Console.WriteLine($"  Check-in:         {reservation.CheckInDate:yyyy-MM-dd}");
+                Console.WriteLine($"  Check-out:        {reservation.CheckOutDate:yyyy-MM-dd}");
+                Console.WriteLine($"  Status:           {reservation.Status}");
+                Console.WriteLine($"  Total:            {reservation.TotalCost:C}");
                 Console.WriteLine();
 
-                foreach (ReservationModel reservation in reservations)
-                {
-                    Console.WriteLine(Border);
-                    Console.WriteLine($"[{counter}]");
-                    Console.WriteLine();
-                    Console.WriteLine($"  Reservation ID:   {reservation.ReservationId}");
-                    Console.WriteLine($"  Reservation code: {reservation.ReservationCode}");
-                    Console.WriteLine($"  Check-in:         {reservation.CheckInDate:yyyy-MM-dd}");
-                    Console.WriteLine($"  Check-out:        {reservation.CheckOutDate:yyyy-MM-dd}");
-                    Console.WriteLine($"  Status:           {reservation.Status}");
-                    Console.WriteLine($"  Total:            {reservation.TotalCost:C}");
-                    Console.WriteLine();
+                List<FacilityReservationModel> bookingsForStay = facilityBookings
+                    .Where(booking => booking.ReservationId == reservation.ReservationId)
+                    .ToList();
 
-                    counter++;
+                if (bookingsForStay.Count > 0)
+                {
+                    Console.WriteLine("  FACILITY BOOKINGS");
+
+                    foreach (FacilityReservationModel booking in bookingsForStay)
+                    {
+                        FacilityReservationMenu.ShowBooking(booking);
+                    }
                 }
 
-                Console.WriteLine("Choose a reservation to modify:");
-                Console.WriteLine("Q to return");
-                System.Console.WriteLine();
+                counter++;
+            }
 
-                input = Console.ReadLine() ?? "";
+            if (facilityBookings.Count > 0)
+            {
+                Console.WriteLine();
+                Console.WriteLine("  To modify or cancel facility bookings, please call reception");
+                Console.WriteLine("  or visit reception during your stay.");
+            }
 
-                if (input.ToLower() == "q")
-                    return;
+            Console.WriteLine(Border);
+            Console.WriteLine();
+            Console.WriteLine("Choose a reservation to modify:");
+            Console.WriteLine("Q to return");
+            Console.WriteLine();
 
-                if (int.TryParse(input, out int num) && num >= 1 && num <= reservations.Count)
-                {
-                    ModifyReservation(reservations[num - 1]);
-                }
-                else
-                {
-                    Console.WriteLine("Invalid number");
-                    System.Console.WriteLine("  Press Enter to try again.");
-                    Console.ReadKey();
-                }
-            }   
+            input = Console.ReadLine() ?? "";
+
+            if (input.ToLower() == "q")
+                return;
+
+            int num;
+
+            if (int.TryParse(input, out num) &&
+                num >= 1 &&
+                num <= reservations.Count)
+            {
+                ModifyReservation(reservations[num - 1]);
+            }
+            else
+            {
+                Console.WriteLine("Invalid number");
+                Console.WriteLine("  Press Enter to try again.");
+                Console.ReadKey();
+            }
         }
     }
+
 
     private static void ModifyReservation(ReservationModel reservation)
     {
