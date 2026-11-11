@@ -10,9 +10,9 @@ public class RoomsLogic
         return RoomsAccess.GetByReservationId(reservationId);
     }
 
-    public List<RoomModel> GetAvailableRooms(DateTime checkInDate, DateTime checkOutDate)
+    public List<RoomModel> GetAvailableRooms(DateTime checkInDate, DateTime checkOutDate, int? reservationId = null)
     {
-        return RoomsAccess.GetAvailableRooms(checkInDate, checkOutDate);
+        return RoomsAccess.GetAvailableRooms(checkInDate, checkOutDate, reservationId);
     }
 
     public List<RoomTypeModel> GetAvailableRoomTypes(List<RoomModel> availableRooms,
