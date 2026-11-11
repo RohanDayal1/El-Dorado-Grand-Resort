@@ -2,56 +2,6 @@ public static class ReservationMenu
 {
     private const string Border = "============================================================";
 
-    public static void ShowReservations(AccountModel account)
-    {
-        ConsoleHelper.ClearScreen();
-        Console.WriteLine(Border);
-        Console.WriteLine(
-            $"  EL DORADO GRAND RESORT  |  RESERVATIONS FOR {(account.FirstName + " " + account.LastName).ToUpper()}"
-        );
-        Console.WriteLine(Border);
-        Console.WriteLine();
-
-        List<ReservationModel> reservations = new ReservationLogic()
-            .GetByUserId(account.UserId)
-            .ToList();
-        var facilityBookings = new FacilityReservationLogic().GetByUserId(account.UserId);
-
-        if (reservations.Count == 0)
-        {
-            Console.WriteLine("No reservations were found for your account.");
-        }
-        else
-        {
-            foreach (ReservationModel reservation in reservations)
-            {
-                Console.WriteLine($"  Reservation ID:   {reservation.ReservationId}");
-                Console.WriteLine($"  Reservation code: {reservation.ReservationCode}");
-                Console.WriteLine($"  Check-in:         {reservation.CheckInDate:yyyy-MM-dd}");
-                Console.WriteLine($"  Check-out:        {reservation.CheckOutDate:yyyy-MM-dd}");
-                Console.WriteLine($"  Status:           {reservation.Status}");
-                Console.WriteLine($"  Total:            {reservation.TotalCost:C}");
-                Console.WriteLine();
-                var bookingsForStay = facilityBookings
-                    .Where(booking => booking.ReservationId == reservation.ReservationId)
-                    .ToList();
-                if (bookingsForStay.Count > 0)
-                {
-                    Console.WriteLine("  FACILITY BOOKINGS");
-                    foreach (var booking in bookingsForStay)
-                        FacilityReservationMenu.ShowBooking(booking);
-                }
-            }
-        }
-
-        if (facilityBookings.Count > 0)
-                    Console.WriteLine("  To modify or cancel this booking, please call reception");
-        Console.WriteLine("  or visit reception during your stay.");
-        Console.WriteLine(Border);
-        Console.Write("Press Enter to return to your home menu...");
-        Console.ReadLine();
-    }
-
     public static void Start(AccountModel? account = null)
     {
         ConsoleHelper.ShowHeader("MAKE A RESERVATION");
