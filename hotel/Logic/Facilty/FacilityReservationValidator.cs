@@ -64,7 +64,7 @@ public static class FacilityReservationValidator
         DateTime closing = startTime
             .Date.AddHours(facility.ClosingHours.Value.Hour)
             .AddMinutes(facility.ClosingHours.Value.Minute);
-        if (closing <= opening || startTime <= opening || endTime >= closing)
+        if (closing <= opening || startTime < opening || endTime > closing)
             errors.Add(FacilityReservationErrors.OutsideOpeningHours);
         return errors;
     }
