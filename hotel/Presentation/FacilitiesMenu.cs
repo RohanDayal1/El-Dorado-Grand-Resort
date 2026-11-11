@@ -18,12 +18,23 @@ public static class FacilitiesMenu
             for (int i = 0; i < hotelFacilities.Count; i++)
                 Console.WriteLine($"  [{i + 1}] {hotelFacilities[i].Name}");
 
-            var selectedFacility = ChooseFacility(hotelFacilities);
+            FacilityModel? selectedFacility = ChooseFacility(hotelFacilities);
             if (selectedFacility == null)
                 return;
 
             ConsoleHelper.ShowHeader(selectedFacility.Name.ToUpper());
             ShowFacilityDetails(selectedFacility);
+            if (selectedFacility.Name.Equals("Restaurant", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine();
+                RestaurantMenu.ShowMenuItems();
+                Console.WriteLine();
+                Console.Write("  Press Enter to return to the facilities...");
+                Console.ReadLine();
+                ConsoleHelper.ClearScreen();
+                continue;
+            }
+
             var facilityServices = facilitiesLogic.GetServices(selectedFacility.FacilityId);
             if (facilityServices.Count == 0)
             {
@@ -52,7 +63,7 @@ public static class FacilitiesMenu
     {
         while (true)
         {
-            int? choice = ReservationInput.ReadInt("Choose a facility: ");
+            int? choice = ReservationInput.ReadInt("Choose a facility (q to go back): ");
             if (choice == null)
                 return null;
             if (choice >= 1 && choice <= hotelFacilities.Count)
