@@ -5,5 +5,6 @@ public enum RoomErrors
     InvalidRoomType,
     RoomNumberTaken,
     RoomNotFound,
-    RoomHasReservations
+    RoomHasReservations,
+    RoomAlreadyDeactivated
 }

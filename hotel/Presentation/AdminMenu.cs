@@ -615,14 +615,13 @@ public static class AdminMenu
             int roomNumber = ReadInputInt("Room number: ");
 
             var logic = new AdminLogic();
-            RoomModel? searchedRoom = logic.GetRoomByRoomNumber(roomNumber);
-            if (searchedRoom.Status == "inactive")
+
+            List<RoomErrors> errors = logic.ValidateRoomDeactivation(roomNumber);
+            if (errors.Contains(RoomErrors.RoomAlreadyDeactivated))
             {
                 Console.WriteLine("Room is already deactivated");
                 return;
             }
-
-            List<RoomErrors> errors = logic.ValidateRoomDeactivation(roomNumber);
             if (errors.Count > 0)
             {
                 foreach (var error in errors)
