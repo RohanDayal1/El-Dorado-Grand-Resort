@@ -92,11 +92,26 @@ public static class ReservationPresentation
 
             int num;
 
-            if (int.TryParse(input, out num) &&
-                num >= 1 &&
-                num <= reservations.Count)
+            if (int.TryParse(input, out num) && num >= 1 && num <= reservations.Count)
             {
-                ModifyReservation(reservations[num - 1]);
+                Console.WriteLine();
+                Console.WriteLine("[1] Modify reservation");
+                Console.WriteLine("[2] Cancel reservation");
+                Console.WriteLine("[Q] Back");
+                Console.WriteLine();
+
+                string action = Console.ReadLine()?.Trim().ToLower();
+
+                if (action == "1")
+                {
+                    ModifyReservation(reservations[num - 1]);
+                }
+                else if (action == "2")
+                {
+                    ReservationCancellationMenu.CancelReservation(reservations[num - 1]);
+                    ReservationLogic reservationLogic = new();
+                    reservations = reservationLogic.GetByUserId(account.UserId).ToList();
+                }
             }
             else
             {

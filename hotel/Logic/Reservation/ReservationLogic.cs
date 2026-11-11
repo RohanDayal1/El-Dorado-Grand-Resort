@@ -268,4 +268,24 @@ public class ReservationLogic
 
         ReservationsAccess.UpdateReservation(reservation, selectedRooms);
     }
+
+    public bool CanCancelReservation(ReservationModel reservation)
+    {
+        if (reservation.Status != "confirmed")
+            return false;
+
+        TimeSpan timeUntilArrival = reservation.CheckInDate.Date - DateTime.Now;
+
+        return timeUntilArrival.TotalHours >= 48;
+    }
+
+    public bool CancelReservation(int reservationId)
+    {
+        ReservationModel? reservation = ReservationsAccess.GetById(reservationId);
+
+        if (reservation == null || !CanCancelReservation(reservation))
+            return false;
+
+        return ReservationsAccess.CancelReservation(reservationId);
+    }
 }

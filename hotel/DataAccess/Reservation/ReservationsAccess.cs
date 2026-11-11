@@ -27,6 +27,7 @@ public static class ReservationsAccess
                    CheckInDate, CheckOutDate, Adults, Children, TotalCost, Status
             FROM Reservation
             WHERE User_Id = @UserId
+            AND Status = 'confirmed'
             ORDER BY CheckInDate;",
             new { UserId = userId }
         );
@@ -189,5 +190,25 @@ public static class ReservationsAccess
             sql = "INSERT INTO Reservation_Room (Reservation_Id, Room_Id) VALUES (@ReservationId, @RoomId)";
             connection.Execute(sql, new { ReservationId = reservation.ReservationId, RoomId = room.RoomId});
         }
+    }
+
+    public static bool CancelReservation(int reservationId)
+    {
+        using var connection = DatabaseInitializer.Connect();
+
+        string sql = @"
+            UPDATE Reservation
+            SET Status = 'cancelled'
+            WHERE Reservation_Id = @ReservationId
+            AND Status = 'confirmed'
+            AND julianday(CheckInDate) - julianday(@Now) >= 2;";
+
+        int cancelation = connection.Execute(sql, new
+        {
+            ReservationId = reservationId,
+            Now = DateTime.Now.ToString("yyyy-MM-dd")
+        });
+
+        return cancelation > 0;
     }
 }
