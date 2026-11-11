@@ -1,11 +1,11 @@
 public static class RoomSelectionMenu
 {
     public static RoomSelectionModel? SelectRooms(DateTime checkInDate, DateTime checkOutDate,
-        int adults, int children, string? preferredBedType, int? reservationId = null, List<ReservationRoomModel>? selectedRooms = null)
+    int adults, int children, string? preferredBedType, int? reservationId = null, List<ReservationRoomModel>? selectedRooms = null)
     {
-        var roomsLogic = new RoomsLogic();
-        var reservationLogic = new ReservationLogic();
-        var selection = new RoomSelectionModel();
+        RoomsLogic roomsLogic = new RoomsLogic();
+        ReservationLogic reservationLogic = new ReservationLogic();
+        RoomSelectionModel selection = new RoomSelectionModel();
 
         if (selectedRooms != null)
             selection.SelectedRooms = selectedRooms;
@@ -23,10 +23,6 @@ public static class RoomSelectionMenu
             selection.RoomTypes = roomsLogic.GetRoomTypes();
         }
 
-        selection.AvailableRooms = roomsLogic.GetAvailableRooms(checkInDate, checkOutDate, reservationId);
-        selection.RoomTypes = roomsLogic.GetAvailableRoomTypes(
-            selection.AvailableRooms, selection.SelectedRooms, preferredBedType);
-
         if (selection.AvailableRooms.Count == 0)
         {
             Console.WriteLine("  No rooms are available for these dates. Please try another stay.");
@@ -38,8 +34,10 @@ public static class RoomSelectionMenu
         {
             ConsoleHelper.ShowHeader("SELECT YOUR ROOMS");
             Console.WriteLine($"  Stay: {checkInDate:yyyy-MM-dd} to {checkOutDate:yyyy-MM-dd}");
-            var dataErrors = reservationLogic.ValidateSelectedRoomData(
+
+            List<RoomSelectionErrors> dataErrors = reservationLogic.ValidateSelectedRoomData(
                 selection.SelectedRooms, selection.AvailableRooms, selection.RoomTypes);
+
             if (dataErrors.Count > 0)
             {
                 ShowSelectionErrors(dataErrors);
@@ -47,11 +45,14 @@ public static class RoomSelectionMenu
                 return null;
             }
 
-            var selectedTypes = reservationLogic.GetSelectedRoomTypes(
+            List<RoomTypeModel> selectedTypes = reservationLogic.GetSelectedRoomTypes(
                 selection.SelectedRooms, selection.AvailableRooms, selection.RoomTypes);
-            var capacity = reservationLogic.CalculateTotalCapacity(selectedTypes);
-            var cost = reservationLogic.CalculateTotalCost(checkInDate, checkOutDate, selectedTypes);
+
+            int capacity = reservationLogic.CalculateTotalCapacity(selectedTypes);
+            decimal cost = reservationLogic.CalculateTotalCost(checkInDate, checkOutDate, selectedTypes);
+
             Console.WriteLine($"\n  Party: {adults} adults, {children} children");
+
             string action = ReadSelectionAction(selection.SelectedRooms, selection.AvailableRooms,
                 selection.RoomTypes, capacity, cost);
 
@@ -60,19 +61,25 @@ public static class RoomSelectionMenu
                 case "1":
                     if (!AddRooms(selection, preferredBedType)) return null;
                     break;
+
                 case "2":
                     RemoveSelectedRoom(selection.SelectedRooms, selection.AvailableRooms, selection.RoomTypes);
                     break;
+
                 case "3":
-                    var errors = reservationLogic.ValidateRoomSelection(adults, children,
+                    List<RoomSelectionErrors> errors = reservationLogic.ValidateRoomSelection(adults, children,
                         selection.SelectedRooms, selection.AvailableRooms, selection.RoomTypes);
+
                     if (errors.Count == 0) return selection;
+
                     ShowSelectionErrors(errors);
                     Console.Write("\n  Press Enter to continue selecting rooms...");
                     Console.ReadLine();
                     break;
+
                 case "q":
                     return null;
+
                 default:
                     Console.WriteLine("  Choose 1, 2, 3, or q.");
                     Console.Write("\n  Press Enter to continue selecting rooms...");

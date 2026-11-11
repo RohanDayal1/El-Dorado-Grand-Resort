@@ -111,6 +111,15 @@ public static class ReservationPresentation
                     ReservationCancellationMenu.CancelReservation(reservations[num - 1]);
                     ReservationLogic reservationLogic = new();
                     reservations = reservationLogic.GetByUserId(account.UserId).ToList();
+
+                    if (reservations.Count == 0)
+                    {
+                        Console.Clear();
+                        ConsoleHelper.ShowHeader("YOUR RESERVATIONS");
+                        Console.WriteLine("  You have no reservations.");
+                        ConsoleHelper.WaitForEnter();
+                        return;
+                    }
                 }
             }
             else
