@@ -25,7 +25,7 @@ public static class ReservationOverview
             return;
         }
 
-        ReservationDetailModel? reservation = new ReservationLogic()
+        ReservationModel? reservation = new ReservationLogic()
             .GetOverviewByEmailAndCode(email, reservationCode);
         if (reservation == null)
         {
@@ -48,7 +48,7 @@ public static class ReservationOverview
         Console.WriteLine($"  {message}");
     }
 
-    private static void ShowReservationOverview(ReservationDetailModel reservation)
+    private static void ShowReservationOverview(ReservationModel reservation)
     {
         var roomsLogic = new RoomsLogic();
         List<RoomTypeModel> roomTypes = roomsLogic.GetRoomTypes();

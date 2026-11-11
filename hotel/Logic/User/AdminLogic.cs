@@ -16,19 +16,19 @@ public class AdminLogic
         return AdminAccess.GetAllGuest();
     }
 
-    public List<ReservationDetailModel> ShowAllReservation()
+    public List<ReservationModel> ShowAllReservation()
     {
         return AdminAccess.GetAllReservation();
     }
 
-    public ReservationModel? GetReservation(int id)
+    public ReservationModel? GetReservation(string reservationcode)
     {
-        return AdminAccess.GetReservation(id);
+        return AdminAccess.GetReservation(reservationcode);
     }
 
-    public string CancelReservation(int reservationid)
+    public string CancelReservation(string reservationcode)
     {
-        var reservation = AdminAccess.GetReservation(reservationid);
+        var reservation = AdminAccess.GetReservation(reservationcode);
         if (reservation == null)
         {
             return "Reservation doesn't exist";
@@ -37,13 +37,13 @@ public class AdminLogic
         {
             return "Reservation already cancelled";
         }
-        AdminAccess.CancelReservation(reservationid);
+        AdminAccess.CancelReservation(reservationcode);
         return "Reservation cancelled";
     }
 
-    public string EditReservation(int reservationId, DateTime newCheckInDate, DateTime newCheckOutDate)
+    public string EditReservation(string reservationcode, DateTime newCheckInDate, DateTime newCheckOutDate)
     {
-        var currentReservation = AdminAccess.GetReservation(reservationId);
+        var currentReservation = AdminAccess.GetReservation(reservationcode);
         if (currentReservation == null)
         {
             return "Reservation doesn't exist";
@@ -60,15 +60,15 @@ public class AdminLogic
         }
 
         Dictionary<int, int> roomIdReplacements = new();
-        List<int> currentRoomIds = AdminAccess.GetRoomIdsByReservationId(reservationId).ToList();
+        List<int> currentRoomIds = AdminAccess.GetRoomIdsByReservationId(currentReservation.ReservationId).ToList();
         foreach (var roomId in currentRoomIds)
         {
             bool foundOtherRoom = false;
             
-            bool currentRoomisFree = IsRoomFree(roomId, newCheckInDate, newCheckOutDate, reservationId);
+            bool currentRoomisFree = IsRoomFree(roomId, newCheckInDate, newCheckOutDate, currentReservation.ReservationId);
             if (!currentRoomisFree)
             {
-                List<int> otherRooms = AdminAccess.GetRoomOfSameType(roomId).ToList();
+                List<int> otherRooms = AdminAccess.GetActiveRoomOfSameType(roomId).ToList();
 
                 foreach (int otherRoomId in otherRooms)
                 {
@@ -76,7 +76,7 @@ public class AdminLogic
                     {
                         continue;
                     }
-                    bool isOtherRoomFree = IsRoomFree(otherRoomId, newCheckInDate, newCheckOutDate, reservationId);
+                    bool isOtherRoomFree = IsRoomFree(otherRoomId, newCheckInDate, newCheckOutDate, currentReservation.ReservationId);
                     if (isOtherRoomFree)
                     {
                         foundOtherRoom = true;
@@ -138,4 +138,84 @@ public class AdminLogic
         }
         return true;
     }
+
+    public List<RoomDetailModel> GetAllRooms()
+    {
+        return AdminAccess.GetAllRoom();
+    }
+
+    public List<RoomTypeModel> GetAllRoomTypes()
+    {
+        return AdminAccess.GetAllRoomType();
+    }
+
+    public void AddRoom(RoomModel room)
+    {
+        AdminAccess.SaveRoom(room);
+    }
+
+    public void AddRoomType(RoomTypeModel roomtype)
+    {
+        AdminAccess.SaveRoomType(roomtype);
+    }
+
+    public List<int> GetAllRoomNumbers()
+    {
+        return AdminAccess.GetAllRoomNumbers();
+    }
+
+    public RoomModel? GetRoomByRoomNumber(int roomnumber)
+    {
+        return AdminAccess.GetRoomByRoomNumber(roomnumber);
+    }
+
+    public List<RoomErrors> ValidateRoomDeactivation(int roomnumber)
+    {   
+        RoomModel? room = AdminAccess.GetRoomByRoomNumber(roomnumber);
+        List<ReservationModel> roomReservations = new();
+        if (room != null)
+        {
+            roomReservations = AdminAccess.GetReservationsByRoomId(room.RoomId);
+        }
+        DateTime today = DateTime.Today;
+        List<RoomErrors> errors = RoomValidator.ValidateRoomDeactivation(roomReservations, room, today);
+        return errors;
+    }
+
+    public void ActivateRoom(int roomnumber)
+    {
+        AdminAccess.ActivateRoom(roomnumber);
+    }
+
+    public void DeactivateRoom(int roomnumber)
+    {
+
+        AdminAccess.DeactivateRoom(roomnumber);
+    }
+
+    public void EditRoomTypeOfRoom(int roomnumber, int roomtypeid)
+    {
+        AdminAccess.EditRoomTypeOfRoom(roomnumber, roomtypeid);
+    }
+
+    public void EditRoomTypeInformation(RoomTypeModel roomtype)
+    {
+        AdminAccess.EditRoomTypeInformation(roomtype);
+    }
+
+    public List<RoomErrors> ValidateRoom(int roomnumber,List<RoomTypeModel> roomtypes, int roomtypeid, List<int> existingRoomNumbers)
+    {
+        return RoomValidator.ValidateRoom(roomnumber, roomtypes, roomtypeid, existingRoomNumbers);
+    }
+
+    public List<RoomTypeErrors> ValidateRoomType(RoomTypeModel roomtype)
+    {
+        return RoomTypeValidator.ValidateRoomType(roomtype);
+    }
+
+    public bool ValidateRoomTypeId(List<RoomTypeModel> roomtypes, int roomtypeid)
+    {
+        return RoomValidator.ValidateRoomTypeId(roomtypes, roomtypeid);
+    }
+
 }

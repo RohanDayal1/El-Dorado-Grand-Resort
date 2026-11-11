@@ -56,6 +56,8 @@ public static class DatabaseInitializer
                 Room_Id INTEGER PRIMARY KEY,
                 Room_Type_Id INTEGER NOT NULL,
                 RoomNumber INTEGER NOT NULL UNIQUE,
+                Status TEXT NOT NULL DEFAULT 'active'
+                CHECK (Status IN ('active', 'inactive')),
                 FOREIGN KEY (Room_Type_Id) REFERENCES Room_Type(Room_Type_Id) ON DELETE RESTRICT
             );
 

@@ -34,12 +34,14 @@ public static class RoomsAccess
                   AND r.CheckOutDate > @CheckIn
                   AND (@ReservationId IS NULL OR r.Reservation_Id != @ReservationId)
             )
+            AND Status = @status
             ORDER BY RoomNumber;",
                 new
                 {
                     CheckIn = checkInDate.ToString("yyyy-MM-dd"),
                     CheckOut = checkOutDate.ToString("yyyy-MM-dd"),
-                    ReservationId = reservationId
+                    ReservationId = reservationId,
+                    status = "active"
                 }
             )
             .ToList();
