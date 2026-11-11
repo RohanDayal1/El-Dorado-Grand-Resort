@@ -1,5 +1,3 @@
-using Microsoft.VisualBasic;
-
 public static class AdminMenu
 {
     private const string Border = "============================================================";
@@ -35,7 +33,7 @@ public static class AdminMenu
                     break;
                 case "6":
                     StartRoomMenu();
-                    break;
+                    continue;
                 case "0":
                     viewadminmenu = false;
                     break;
@@ -96,10 +94,9 @@ public static class AdminMenu
                     break;
                 case "5":
                     ShowEditRoomTypeInformation();
-                    //test();
                     break;
                 case "6":
-                    ShowRemoveRoom();
+                    ShowRoomDeactivation();
                     break;
                 case "0":
                     viewroommenu = false;
@@ -125,11 +122,11 @@ public static class AdminMenu
         Console.WriteLine();
 
         Console.WriteLine("[1] View all rooms");
-        Console.WriteLine("[2] Add new room");
+        Console.WriteLine("[2] Add or activate a room");
         Console.WriteLine("[3] Add new room type");
         Console.WriteLine("[4] Edit a room's type");
         Console.WriteLine("[5] Edit a roomtype information's");
-        Console.WriteLine("[6] Remove a room");
+        Console.WriteLine("[6] Deactivate a room");
         Console.WriteLine("[0] Back to Admin Menu");
     }
 
@@ -251,6 +248,7 @@ public static class AdminMenu
             Console.WriteLine($"  Capacity:        {room.Capacity}");
             Console.WriteLine($"  Price Per Night: {room.PricePerNight}");
             Console.WriteLine($"  BedType:         {room.BedType}");
+            Console.WriteLine($"  Status:          {room.Status}");
 
             Console.WriteLine();
         }
@@ -264,6 +262,37 @@ public static class AdminMenu
             int roomNumber = ReadInputInt("Room number (101-120, 201-220, 301-320, 401-420): ");
 
             var logic = new AdminLogic();
+            RoomModel? searchedRoom = logic.GetRoomByRoomNumber(roomNumber);
+
+            if (searchedRoom != null && searchedRoom.Status == "inactive")
+            {   
+                Console.WriteLine();
+                Console.WriteLine($"Room {roomNumber} already exists and is deactivated");
+                while (true)
+                {
+                    string? choice = ReadInput("Do you want to Activate it? (y/n): ");
+                    if (choice == null)
+                    {
+                        return;
+                    }
+                    else if (choice == "y" || choice == "Y")
+                    {
+                        logic.ActivateRoom(roomNumber);
+                        Console.WriteLine("Room activated");
+                        return;
+                    }
+                    else if (choice == "n" || choice == "N")
+                    {
+                        Console.WriteLine("No room got activated/added");
+                        return;
+                    }
+                    else
+                    {
+                        Console.WriteLine("invalid option");
+                    }
+                }
+            }
+
             List<RoomTypeModel> allRoomTypes = logic.GetAllRoomTypes();
             if (allRoomTypes.Count == 0)
             {
@@ -279,9 +308,9 @@ public static class AdminMenu
             }
             int roomTypeId = ReadInputInt("Option: ");
 
-            List<int> allExistingRoomNumbers = logic.GetExistingRooms();
+            List<int> allExistingRoomNumbers = logic.GetAllRoomNumbers();
 
-            var errors = RoomValidator.ValidateRoom(roomNumber, allRoomTypes, roomTypeId, allExistingRoomNumbers);
+            var errors = logic.ValidateRoom(roomNumber, allRoomTypes, roomTypeId, allExistingRoomNumbers);
             if (errors.Count > 0)
             {
                 foreach (var error in errors)
@@ -367,7 +396,8 @@ public static class AdminMenu
                                         PricePerNight = PricePerNight, 
                                         BedType = BedType
                                     };
-            var errors = RoomTypeValidator.ValidateRoomType(roomtype);
+            var logic = new AdminLogic();
+            var errors = logic.ValidateRoomType(roomtype);
 
             if (errors.Count > 0)
             {
@@ -416,7 +446,7 @@ public static class AdminMenu
             int roomNumber = ReadInputInt("Room number: ");
 
             var logic = new AdminLogic();
-            List<RoomErrors> errors = logic.ValidateRemoveRoom(roomNumber);
+            List<RoomErrors> errors = logic.ValidateRoomDeactivation(roomNumber);
             if (errors.Count > 0)
             {
                 foreach (var error in errors)
@@ -448,7 +478,7 @@ public static class AdminMenu
             }
             int roomTypeId = ReadInputInt("Option: ");
 
-            bool result = RoomValidator.ValidateRoomTypeId(allRoomTypes, roomTypeId);
+            bool result = logic.ValidateRoomTypeId(allRoomTypes, roomTypeId);
             if (!result)
             {
                 Console.WriteLine("Choose a valid room type.");
@@ -487,7 +517,7 @@ public static class AdminMenu
             var logic = new AdminLogic();
             List<RoomTypeModel> allRoomTypes = logic.GetAllRoomTypes();
 
-            var roomtypeidErrors = RoomValidator.ValidateRoomTypeId(allRoomTypes, roomTypeId);
+            var roomtypeidErrors = logic.ValidateRoomTypeId(allRoomTypes, roomTypeId);
             if (!roomtypeidErrors)
             {
                 Console.WriteLine("Not a valid roomtype id.");
@@ -536,7 +566,7 @@ public static class AdminMenu
                                         PricePerNight = newPricePerNight, 
                                         BedType = newBedType
                                     };
-            var errors = RoomTypeValidator.ValidateRoomType(roomtype);
+            var errors = logic.ValidateRoomType(roomtype);
             if (errors.Count > 0)
             {
                 foreach (var error in errors)
@@ -569,6 +599,7 @@ public static class AdminMenu
             if (!ShowConfirmation(lines))
             {
                 Console.WriteLine("Changes abandoned.");
+                break;
             }
             logic.EditRoomTypeInformation(roomtype);
             Console.WriteLine("Changes applied");
@@ -576,7 +607,7 @@ public static class AdminMenu
         }
     }
 
-    public static void ShowRemoveRoom()
+    public static void ShowRoomDeactivation()
     {
         while (true)
         {
@@ -584,7 +615,14 @@ public static class AdminMenu
             int roomNumber = ReadInputInt("Room number: ");
 
             var logic = new AdminLogic();
-            List<RoomErrors> errors = logic.ValidateRemoveRoom(roomNumber);
+            RoomModel? searchedRoom = logic.GetRoomByRoomNumber(roomNumber);
+            if (searchedRoom.Status == "inactive")
+            {
+                Console.WriteLine("Room is already deactivated");
+                return;
+            }
+
+            List<RoomErrors> errors = logic.ValidateRoomDeactivation(roomNumber);
             if (errors.Count > 0)
             {
                 foreach (var error in errors)
@@ -592,7 +630,7 @@ public static class AdminMenu
                     string errorMessage = error switch
                                                 {
                                                     RoomErrors.RoomNotFound => "No room with that room number exists",
-                                                    RoomErrors.RoomHasReservations => "This room has confirmed reservations, so it can't be removed.",
+                                                    RoomErrors.RoomHasReservations => "This room has confirmed reservations, so it can't be deactivated.",
                                                     _ => "Please check your input and try again."
                                                 };
                     Console.WriteLine(errorMessage);
@@ -602,10 +640,10 @@ public static class AdminMenu
             }
             
             List<RoomDetailModel> rooms = logic.GetAllRooms();
-            RoomDetailModel? room = rooms.First(roomdetail => roomdetail.RoomNumber == roomNumber);
+            RoomDetailModel room = rooms.First(roomdetail => roomdetail.RoomNumber == roomNumber);
             List<string> lines = new()
             {
-                "Room to remove",
+                "Room to deactivate:",
                 $"Room Id:        {room.RoomId}",
                 $"Room Number:    {room.RoomNumber}",
                 $"Roomtype Id:    {room.Room_Type_Id}",
@@ -614,11 +652,11 @@ public static class AdminMenu
 
             if (!ShowConfirmation(lines))
             {
-                Console.WriteLine("No room got removed");
+                Console.WriteLine("No room got deactivated");
                 break;
             }
-            logic.RemoveRoom(roomNumber);
-            Console.WriteLine("Room removed");
+            logic.DeactivateRoom(roomNumber);
+            Console.WriteLine("Room deactivated");
             break;
         }
     }

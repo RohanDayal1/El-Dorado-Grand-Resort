@@ -33,11 +33,13 @@ public static class RoomsAccess
                   AND r.CheckInDate < @CheckOut
                   AND r.CheckOutDate > @CheckIn
             )
+            AND Status = @status
             ORDER BY RoomNumber;",
                 new
                 {
                     CheckIn = checkInDate.ToString("yyyy-MM-dd"),
                     CheckOut = checkOutDate.ToString("yyyy-MM-dd"),
+                    status = "active"
                 }
             )
             .ToList();

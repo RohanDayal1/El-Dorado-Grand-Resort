@@ -7,4 +7,5 @@ public class RoomDetailModel
     public int Capacity { get; set; }
     public int PricePerNight { get; set; }
     public string? BedType { get; set; }
+    public string Status { get; set; } = string.Empty;
 }

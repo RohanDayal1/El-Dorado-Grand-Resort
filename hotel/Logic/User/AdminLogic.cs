@@ -68,7 +68,7 @@ public class AdminLogic
             bool currentRoomisFree = IsRoomFree(roomId, newCheckInDate, newCheckOutDate, currentReservation.ReservationId);
             if (!currentRoomisFree)
             {
-                List<int> otherRooms = AdminAccess.GetRoomOfSameType(roomId).ToList();
+                List<int> otherRooms = AdminAccess.GetActiveRoomOfSameType(roomId).ToList();
 
                 foreach (int otherRoomId in otherRooms)
                 {
@@ -159,12 +159,17 @@ public class AdminLogic
         AdminAccess.SaveRoomType(roomtype);
     }
 
-    public List<int> GetExistingRooms()
+    public List<int> GetAllRoomNumbers()
     {
-        return AdminAccess.GetExistingRooms();
+        return AdminAccess.GetAllRoomNumbers();
     }
 
-    public List<RoomErrors> ValidateRemoveRoom(int roomnumber)
+    public RoomModel? GetRoomByRoomNumber(int roomnumber)
+    {
+        return AdminAccess.GetRoomByRoomNumber(roomnumber);
+    }
+
+    public List<RoomErrors> ValidateRoomDeactivation(int roomnumber)
     {   
         RoomModel? room = AdminAccess.GetRoomByRoomNumber(roomnumber);
         List<ReservationModel> roomReservations = new();
@@ -172,13 +177,20 @@ public class AdminLogic
         {
             roomReservations = AdminAccess.GetReservationsByRoomId(room.RoomId);
         }
-        List<RoomErrors> errors = RoomValidator.ValidateRemoveRoom(roomReservations, room);
+        DateTime today = DateTime.Today;
+        List<RoomErrors> errors = RoomValidator.ValidateRoomDeactivation(roomReservations, room, today);
         return errors;
     }
 
-    public void RemoveRoom(int roomnumber)
+    public void ActivateRoom(int roomnumber)
     {
-        AdminAccess.DeleteRoom(roomnumber);
+        AdminAccess.ActivateRoom(roomnumber);
+    }
+
+    public void DeactivateRoom(int roomnumber)
+    {
+
+        AdminAccess.DeactivateRoom(roomnumber);
     }
 
     public void EditRoomTypeOfRoom(int roomnumber, int roomtypeid)
@@ -190,4 +202,20 @@ public class AdminLogic
     {
         AdminAccess.EditRoomTypeInformation(roomtype);
     }
+
+    public List<RoomErrors> ValidateRoom(int roomnumber,List<RoomTypeModel> roomtypes, int roomtypeid, List<int> existingRoomNumbers)
+    {
+        return RoomValidator.ValidateRoom(roomnumber, roomtypes, roomtypeid, existingRoomNumbers);
+    }
+
+    public List<RoomTypeErrors> ValidateRoomType(RoomTypeModel roomtype)
+    {
+        return RoomTypeValidator.ValidateRoomType(roomtype);
+    }
+
+    public bool ValidateRoomTypeId(List<RoomTypeModel> roomtypes, int roomtypeid)
+    {
+        return RoomValidator.ValidateRoomTypeId(roomtypes, roomtypeid);
+    }
+
 }

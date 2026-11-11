@@ -60,7 +60,7 @@ public static class RoomValidator
         return true;
     }
 
-    public static List<RoomErrors> ValidateRemoveRoom(List<ReservationModel> reservations, RoomModel? room)
+    public static List<RoomErrors> ValidateRoomDeactivation(List<ReservationModel> reservations, RoomModel? room, DateTime today)
     {
         List<RoomErrors> errors = new();
         if (room == null)
@@ -70,7 +70,7 @@ public static class RoomValidator
         }
         foreach (var reservation in reservations)
         {
-            if (reservation.Status == "confirmed")
+            if (reservation.Status == "confirmed" && reservation.CheckOutDate >= today)
             {
                 errors.Add(RoomErrors.RoomHasReservations);
                 break;

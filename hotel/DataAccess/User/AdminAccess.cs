@@ -148,16 +148,17 @@ public static class AdminAccess
         return reservations;
     }
 
-    public static List<int> GetRoomOfSameType(int roomid)
+    public static List<int> GetActiveRoomOfSameType(int roomid)
     {
         using var connection = DatabaseInitializer.Connect();
         connection.Open();
 
         const string sql = @"SELECT Room_Id AS RoomId 
                             FROM Room 
-                            WHERE Room_Type_Id = (SELECT Room_Type_id FROM Room WHERE Room_Id = @roomId)";
+                            WHERE Room_Type_Id = (SELECT Room_Type_id FROM Room WHERE Room_Id = @roomId)
+                            AND Room.Status = @status";
 
-        List<int> roomIdWithSameType = connection.Query<int>(sql, new {roomId = roomid}).ToList();
+        List<int> roomIdWithSameType = connection.Query<int>(sql, new {roomId = roomid, status = "active"}).ToList();
         return roomIdWithSameType;
     }
 
@@ -190,7 +191,8 @@ public static class AdminAccess
                             rt.Name,
                             rt.Capacity,
                             rt.PricePerNight,
-                            rt.BedType
+                            rt.BedType,
+                            Status
                             FROM Room
                             INNER JOIN Room_Type rt ON Room.Room_Type_Id = rt.Room_Type_Id";
 
@@ -237,7 +239,7 @@ public static class AdminAccess
                             });
     }
 
-    public static List<int> GetExistingRooms()
+    public static List<int> GetAllRoomNumbers()
     {
         using var connection = DatabaseInitializer.Connect();
         connection.Open();
@@ -246,19 +248,43 @@ public static class AdminAccess
         return activeRoomNumbers;
     }
 
-    public static void DeleteRoom(int roomnumber)
+    public static void ActivateRoom(int roomnumber)
     {
         using var connection = DatabaseInitializer.Connect();
         connection.Open();
 
-        connection.Execute("DELETE FROM Room WHERE RoomNumber = @roomNumber", new {roomNumber = roomnumber});
+        connection.Execute(@"UPDATE Room 
+                            SET Status = @status 
+                            WHERE RoomNumber = @roomNumber", 
+                            new 
+                            {
+                                status = "active", 
+                                roomNumber = roomnumber
+                            });
+    }
+
+    public static void DeactivateRoom(int roomnumber)
+    {
+        using var connection = DatabaseInitializer.Connect();
+        connection.Open();
+
+        connection.Execute(@"UPDATE Room 
+                            SET Status = @status 
+                            WHERE RoomNumber = @roomNumber", 
+                            new 
+                            {
+                                status = "inactive",
+                                roomNumber = roomnumber
+                            });
     }
 
     public static RoomModel? GetRoomByRoomNumber(int roomnumber)
     {
         using var connection = DatabaseInitializer.Connect();
         connection.Open();
-        const string sql = "SELECT Room_Id AS RoomId, Room_Type_Id, RoomNumber FROM Room WHERE RoomNumber = @roomNumber";
+        const string sql = @"SELECT Room_Id AS RoomId, Room_Type_Id, RoomNumber, Status 
+                            FROM Room 
+                            WHERE RoomNumber = @roomNumber";
 
         RoomModel? room = connection.QueryFirstOrDefault<RoomModel>(sql, new {roomNumber = roomnumber});
         return room;
