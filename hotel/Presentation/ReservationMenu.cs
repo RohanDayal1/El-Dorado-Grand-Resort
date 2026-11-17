@@ -12,6 +12,7 @@ public static class ReservationMenu
         var dates = ReadStayDates(today);
         if (dates == null)
             return;
+
         var counts = ReadGuestCounts();
         if (counts == null)
             return;
@@ -23,6 +24,7 @@ public static class ReservationMenu
             string? preference = ReadBedPreference(types);
             if (preference == null)
                 return;
+
             selection = RoomSelectionMenu.SelectRooms(
                 dates.Value.CheckInDate,
                 dates.Value.CheckOutDate,
@@ -39,6 +41,7 @@ public static class ReservationMenu
             ConsoleHelper.WaitForEnter();
             return;
         }
+
         if (selection == null)
             return;
 
@@ -57,6 +60,7 @@ public static class ReservationMenu
             {
                 user = null;
             }
+
             if (user == null)
             {
                 Console.WriteLine(
@@ -66,6 +70,7 @@ public static class ReservationMenu
                 return;
             }
         }
+
         if (user == null)
             return;
 
@@ -75,16 +80,19 @@ public static class ReservationMenu
             rooms.AvailableRooms,
             rooms.RoomTypes
         );
+
         if (errors.Count > 0)
         {
             foreach (var error in errors)
                 Console.WriteLine($"  {GetRoomSelectionMessage(error)}");
+
             ConsoleHelper.WaitForEnter();
             return;
         }
 
         var selectedTypes = logic.GetSelectedRoomTypes(
             rooms.SelectedRooms, rooms.AvailableRooms, rooms.RoomTypes);
+
         decimal cost = logic.CalculateTotalCost(
             dates.Value.CheckInDate, dates.Value.CheckOutDate, selectedTypes);
 
@@ -140,17 +148,21 @@ public static class ReservationMenu
     private static (DateTime CheckInDate, DateTime CheckOutDate)? ReadStayDates(DateTime today)
     {
         var logic = new ReservationLogic();
+
         while (true)
         {
             DateTime? checkIn = ReservationInput.ReadDate("Check-in (yyyy-MM-dd): ");
             if (checkIn == null)
                 return null;
+
             DateTime? checkOut = ReservationInput.ReadDate("Check-out (yyyy-MM-dd): ");
             if (checkOut == null)
                 return null;
+
             var errors = logic.ValidateDates(checkIn.Value, checkOut.Value, today);
             if (errors.Count == 0)
                 return (checkIn.Value, checkOut.Value);
+
             ShowDateErrors(errors);
         }
     }
@@ -159,17 +171,21 @@ public static class ReservationMenu
     {
         ConsoleHelper.ShowHeader("NUMBER OF GUESTS");
         var logic = new ReservationLogic();
+
         while (true)
         {
             var adults = ReservationInput.ReadInt("Number of adults: ");
             if (adults == null)
                 return null;
+
             var children = ReservationInput.ReadInt("Number of children: ");
             if (children == null)
                 return null;
+
             var errors = logic.ValidateGuestCounts(adults.Value, children.Value);
             if (errors.Count == 0)
                 return (adults.Value, children.Value);
+
             ShowGuestCountErrors(errors);
         }
     }
@@ -177,27 +193,25 @@ public static class ReservationMenu
     private static string? ReadBedPreference(List<RoomTypeModel> roomTypes)
     {
         ConsoleHelper.ShowHeader("BED PREFERENCE");
+
         var beds = roomTypes
             .Where(type => !string.IsNullOrWhiteSpace(type.BedType))
             .Select(type => type.BedType)
             .Distinct()
             .ToList();
-        Console.WriteLine("\n  BED PREFERENCE (optional)");
-        for (int index = 0; index < beds.Count; index++)
-            Console.WriteLine($"  [{index + 1}] {beds[index]}");
-        while (true)
-        {
-            string? input = ReservationInput.ReadText(
-                "Choose a bed number, or press Enter for no preference: "
-            );
-            if (input == null)
-                return null;
-            if (input == "")
-                return "";
-            if (int.TryParse(input, out int choice) && choice >= 1 && choice <= beds.Count)
-                return beds[choice - 1];
-            Console.WriteLine("  Choose one of the listed options, or press Enter.");
-        }
+
+        List<string> options = new List<string>(beds);
+        options.Add("No preference");
+
+        int choice = ConsoleHelper.SelectionMenu(options, "BED PREFERENCE", "Choose a bed preference", true);
+
+        if (choice == -1)
+            return null;
+
+        if (choice == beds.Count)
+            return "";
+
+        return beds[choice];
     }
 
     private static bool ShowReview(
@@ -229,16 +243,18 @@ public static class ReservationMenu
             reservation.CheckInDate,
             reservation.CheckOutDate
         );
+
         Console.WriteLine($"\n  Total: {reservation.TotalCost:C}");
-        while (true)
+
+        List<string> options = new List<string>
         {
-            string? choice = ReservationInput.ReadText("Confirm reservation? (y/n): ");
-            if (choice == null || choice.Equals("n", StringComparison.OrdinalIgnoreCase))
-                return false;
-            if (choice.Equals("y", StringComparison.OrdinalIgnoreCase))
-                return true;
-            Console.WriteLine("  Enter y to confirm, n to abandon, or q to cancel.");
-        }
+            "Confirm",
+            "Cancel"
+        };
+
+        int choice = ConsoleHelper.SelectionMenu(options, "CONFIRM RESERVATION", "Choose an option", true);
+
+        return choice == 0;
     }
 
     private static void ShowConfirmation(ReservationModel reservation, string email)
