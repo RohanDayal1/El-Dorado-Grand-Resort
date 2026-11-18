@@ -222,40 +222,39 @@ public static class ReservationMenu
         List<RoomTypeModel> roomTypes
     )
     {
-        ConsoleHelper.ShowHeader("REVIEW YOUR RESERVATION");
+        ConsoleHelper.ClearScreen();
+        Console.WriteLine(Border);
+        Console.WriteLine("  EL DORADO GRAND RESORT  |  REVIEW YOUR RESERVATION");
+        Console.WriteLine(Border);
+
         Console.WriteLine($"  Guest:         {user.FirstName} {user.LastName}");
         Console.WriteLine($"  Email:         {user.Email}");
         Console.WriteLine($"  Phone:         {user.Phone}");
         Console.WriteLine($"  Date of birth: {user.DateOfBirth:yyyy-MM-dd}");
         Console.WriteLine($"  Check-in:      {reservation.CheckInDate:yyyy-MM-dd}");
         Console.WriteLine($"  Check-out:     {reservation.CheckOutDate:yyyy-MM-dd}");
-        Console.WriteLine(
-            $"  Nights:        {(reservation.CheckOutDate - reservation.CheckInDate).Days}"
-        );
-        Console.WriteLine(
-            $"  Party:         {reservation.Adults} adults, {reservation.Children} children"
-        );
+        Console.WriteLine($"  Nights:        {(reservation.CheckOutDate - reservation.CheckInDate).Days}");
+        Console.WriteLine($"  Party:         {reservation.Adults} adults, {reservation.Children} children");
+
         Console.WriteLine();
-        RoomSelectionMenu.ShowSelectedRooms(
-            selectedRooms,
-            availableRooms,
-            roomTypes,
-            reservation.CheckInDate,
-            reservation.CheckOutDate
-        );
+        RoomSelectionMenu.ShowSelectedRooms(selectedRooms, availableRooms, roomTypes, reservation.CheckInDate, reservation.CheckOutDate);
 
         Console.WriteLine($"\n  Total: {reservation.TotalCost:C}");
 
-        List<string> options = new List<string>
+        while (true)
         {
-            "Confirm",
-            "Cancel"
-        };
+            string? choice = ReservationInput.ReadText("\n  Confirm reservation? (Y/N): ");
 
-        int choice = ConsoleHelper.SelectionMenu(options, "CONFIRM RESERVATION", "Choose an option", true);
+            if (choice == "y")
+                return true;
 
-        return choice == 0;
+            if (choice == "n" || choice == null)
+                return false;
+
+            Console.WriteLine("  Please enter Y or N.");
+        }
     }
+
 
     private static void ShowConfirmation(ReservationModel reservation, string email)
     {

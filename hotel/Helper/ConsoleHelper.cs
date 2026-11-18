@@ -31,7 +31,7 @@ static class ConsoleHelper
     }
 
     
-    public static int SelectionMenu(List<string> options, string title = "", string description = null)
+    public static int SelectionMenu(List<string> options, string title = "", string description = null, List<string> details = null, string information = null)
     {
         if (options is null || options.Count == 0)
         {
@@ -53,7 +53,6 @@ static class ConsoleHelper
 
             Console.WriteLine("============================================================");
             Console.WriteLine(title.PadLeft((60 + title.Length) / 2));
-            
             if (description != null)
             {
                 Console.WriteLine(description.PadLeft((60 + description.Length) / 2));
@@ -63,6 +62,11 @@ static class ConsoleHelper
             Console.WriteLine();
             Console.WriteLine("  ESC: Back          ↑ ↓: Navigate          Enter: Select");
             Console.WriteLine();
+
+            if (information != null)
+            {
+                Console.WriteLine(information);
+            }
 
             for (int i = 0; i < options.Count; i++)
             {
@@ -75,6 +79,11 @@ static class ConsoleHelper
                 else
                 {
                     Console.WriteLine($"          {options[i]}");
+                }
+
+                if (details != null && i < details.Count)
+                {
+                    Console.WriteLine($"             {details[i]}");
                 }
             }
 
@@ -160,6 +169,7 @@ static class ConsoleHelper
                     Console.Write("  |");
                 }
             }
+            Console.WriteLine();
 
             ConsoleKey choice = Console.ReadKey(true).Key;
 

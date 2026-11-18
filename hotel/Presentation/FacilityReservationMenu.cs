@@ -249,4 +249,19 @@ public static class FacilityReservationMenu
             Console.WriteLine($"  {message}");
         }
     }
+
+    public static string GetBookingDetails(FacilityReservationModel booking)
+    {
+        string details = "";
+
+        details += $"    Booking reference: FAC-{booking.FacilityReservationId}\n";
+        details += $"    Facility:          {booking.FacilityName}\n";
+        details += $"    Service:           {booking.ServiceName}\n";
+        details += $"    Date:              {booking.ReservationDate:yyyy-MM-dd}\n";
+        details += $"    Start time:        {booking.StartTime:HH:mm}\n";
+        details += $"    People:            {booking.PartySize}\n";
+        details += $"    Status:            {booking.Status}\n";
+
+        return details;
+    }
 }
