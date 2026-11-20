@@ -4,6 +4,7 @@ public static class FacilitiesMenu
     {
         var facilitiesLogic = new FacilitiesLogic();
         var hotelFacilities = facilitiesLogic.GetFacilities();
+
         if (hotelFacilities.Count == 0)
         {
             ConsoleHelper.ShowHeader("OUR FACILITIES");
@@ -14,16 +15,26 @@ public static class FacilitiesMenu
 
         while (true)
         {
-            ConsoleHelper.ShowHeader("OUR FACILITIES");
-            for (int i = 0; i < hotelFacilities.Count; i++)
-                Console.WriteLine($"  [{i + 1}] {hotelFacilities[i].Name}");
+            List<string> facilityNames = new List<string>();
 
-            FacilityModel? selectedFacility = ChooseFacility(hotelFacilities);
-            if (selectedFacility == null)
+            foreach (FacilityModel facility in hotelFacilities)
+            {
+                facilityNames.Add(facility.Name);
+            }
+
+            int choice = ConsoleHelper.SelectionMenu(facilityNames, "FACILITIES", "Choose a facility");
+
+            if (choice == -1)
                 return;
+
+            FacilityModel selectedFacility = hotelFacilities[choice];
 
             ConsoleHelper.ShowHeader(selectedFacility.Name.ToUpper());
             ShowFacilityDetails(selectedFacility);
+            Console.WriteLine("\nPress any key to continue");
+            Console.ReadKey();
+            Console.Clear();
+
             if (selectedFacility.Name.Equals("Restaurant", StringComparison.OrdinalIgnoreCase))
             {
                 Console.WriteLine();
@@ -36,6 +47,7 @@ public static class FacilitiesMenu
             }
 
             var facilityServices = facilitiesLogic.GetServices(selectedFacility.FacilityId);
+
             if (facilityServices.Count == 0)
             {
                 Console.WriteLine("\n  There are no services to book at this facility.");
@@ -45,8 +57,10 @@ public static class FacilitiesMenu
             }
 
             var selectedService = ChooseFacilityService(facilityServices);
+
             if (selectedService == null)
                 continue;
+
             if (account == null)
             {
                 Console.WriteLine("\n  Please log in from the home menu to book this service.");
@@ -59,25 +73,14 @@ public static class FacilitiesMenu
         }
     }
 
-    private static FacilityModel? ChooseFacility(List<FacilityModel> hotelFacilities)
-    {
-        while (true)
-        {
-            int? choice = ReservationInput.ReadInt("Choose a facility (q to go back): ");
-            if (choice == null)
-                return null;
-            if (choice >= 1 && choice <= hotelFacilities.Count)
-                return hotelFacilities[choice.Value - 1];
-            Console.WriteLine("  Choose one of the listed facilities.");
-        }
-    }
-
     private static void ShowFacilityDetails(FacilityModel selectedFacility)
     {
         if (!string.IsNullOrWhiteSpace(selectedFacility.Description))
             Console.WriteLine($"  {selectedFacility.Description}");
+
         if (!string.IsNullOrWhiteSpace(selectedFacility.Location))
             Console.WriteLine($"  Location: {selectedFacility.Location}");
+
         if (selectedFacility.OpeningHours.HasValue && selectedFacility.ClosingHours.HasValue)
             Console.WriteLine(
                 $"  Opening hours: {selectedFacility.OpeningHours:HH:mm} - {selectedFacility.ClosingHours:HH:mm}"
@@ -88,24 +91,18 @@ public static class FacilitiesMenu
         List<FacilityServiceModel> facilityServices
     )
     {
-        Console.WriteLine("\n  AVAILABLE SERVICES");
-        for (int i = 0; i < facilityServices.Count; i++)
+        List<string> serviceNames = new List<string>();
+
+        foreach (FacilityServiceModel service in facilityServices)
         {
-            var selectedService = facilityServices[i];
-            Console.WriteLine(
-                $"  [{i + 1}] {selectedService.Name} | Duration: {selectedService.DurationMinutes} minutes"
-            );
-            if (!string.IsNullOrWhiteSpace(selectedService.Description))
-                Console.WriteLine($"      {selectedService.Description}");
+            serviceNames.Add(service.Name);
         }
-        while (true)
-        {
-            int? choice = ReservationInput.ReadInt("Choose a service (q to go back): ");
-            if (choice == null)
-                return null;
-            if (choice >= 1 && choice <= facilityServices.Count)
-                return facilityServices[choice.Value - 1];
-            Console.WriteLine("  Choose one of the listed services.");
-        }
+
+        int choice = ConsoleHelper.SelectionMenu(serviceNames, "AVAILABLE SERVICES", "Choose a service");
+
+        if (choice == -1)
+            return null;
+
+        return facilityServices[choice];
     }
 }
