@@ -3,7 +3,9 @@ using Microsoft.Data.Sqlite;
 
 public static class DatabaseInitializer
 {
-    private const string ConnectionString = "Data Source=DataSources/el_dorado.db;Foreign Keys=True";
+    private const string ConnectionString =
+        "Data Source=DataSources/el_dorado.db;Foreign Keys=True";
+
     public static SqliteConnection Connect() => new SqliteConnection(ConnectionString);
 
     public static void ResetDatabase()
@@ -11,11 +13,13 @@ public static class DatabaseInitializer
         using var connection = new SqliteConnection(ConnectionString);
         connection.Open();
 
-        connection.Execute(@"
+        connection.Execute(
+            @"
             DROP TABLE IF EXISTS Facility_Reservation;
             DROP TABLE IF EXISTS Facility_Service;
             DROP TABLE IF EXISTS Activity_Reservation;
             DROP TABLE IF EXISTS Reservation_Room;
+            DROP TABLE IF EXISTS Review;
             DROP TABLE IF EXISTS Reservation;
             DROP TABLE IF EXISTS Room;
             DROP TABLE IF EXISTS Account;
@@ -23,9 +27,11 @@ public static class DatabaseInitializer
             DROP TABLE IF EXISTS Activity;
             DROP TABLE IF EXISTS Room_Type;
             DROP TABLE IF EXISTS User;
-        ");
+        "
+        );
 
-        connection.Execute(@"
+        connection.Execute(
+            @"
             CREATE TABLE User (
                 User_Id INTEGER PRIMARY KEY,
                 First_Name TEXT NOT NULL,
@@ -74,6 +80,15 @@ public static class DatabaseInitializer
                     CHECK (Status IN ('confirmed','cancelled')),
                 CHECK (CheckOutDate > CheckInDate),
                 FOREIGN KEY (User_Id) REFERENCES User(User_Id) ON DELETE RESTRICT
+            );
+
+            CREATE TABLE Review (
+                Review_Id INTEGER PRIMARY KEY,
+                Reservation_Id INTEGER NOT NULL UNIQUE,
+                Rating INTEGER NOT NULL,
+                Feedback TEXT,
+                CreatedAt TEXT NOT NULL,
+                FOREIGN KEY (Reservation_Id) REFERENCES Reservation(Reservation_Id) ON DELETE RESTRICT
             );
 
             CREATE TABLE Reservation_Room (
@@ -148,9 +163,11 @@ public static class DatabaseInitializer
             CREATE INDEX IX_Facility_Reservation_Facility_Date_Status
                 ON Facility_Reservation (Facility_Id, ReservationDate, Status);
 
-        ");
+        "
+        );
 
-        connection.Execute(@"
+        connection.Execute(
+            @"
             INSERT INTO User (User_Id, First_Name, Last_Name, Email, Phone, Date_Of_Birth) VALUES
                 (1, 'Admin', 'Admin', 'admin@test.nl', '0612345678', '2000-06-20'),
                 (2, 'Hans', 'Aura', 'hans@test.nl', '0612345678', '2000-06-20'),
@@ -185,6 +202,10 @@ public static class DatabaseInitializer
                 (3, 'H8ZN3C', 4, '2026-12-01', '2026-12-03', 3, 0, 500.00, 'cancelled'),
                 (4, 'R2VD6L', 7, '2026-11-15', '2026-11-18', 2, 0, 600.00, 'confirmed');
 
+            INSERT INTO Review (Review_Id, Reservation_Id, Rating, Feedback, CreatedAt) VALUES
+                (1, 1, 5, 'Great stay! The room was clean and the staff were friendly.', '2026-11-05 10:00:00'),
+                (2, 2, 4, NULL, '2026-11-13 14:30:00');
+
             INSERT INTO Reservation_Room (Reservation_Id, Room_Id) VALUES
                 (1, 1), (2, 5), (3, 2), (3, 3), (4, 6);
 
@@ -210,7 +231,7 @@ public static class DatabaseInitializer
                 (Activity_Reservation_Id, Account_Id, Activity_Id, ReservationDate, StartTime, EndTime, PartySize, Status) VALUES
                 (1, 2, 1, '2026-11-03', '08:00', '09:00', 2, 'confirmed'),
                 (2, 3, 2, '2026-11-11', '10:00', '12:00', 4, 'confirmed');
-        ");
-
+        "
+        );
     }
 }
