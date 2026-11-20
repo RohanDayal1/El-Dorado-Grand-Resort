@@ -93,6 +93,10 @@ static class ConsoleHelper
             {
                 return -1;
             }
+            else if (choice == ConsoleKey.C)
+            {
+                return -2;
+            }
             else if (choice == ConsoleKey.S || choice == ConsoleKey.DownArrow)
             {
                 index++;
@@ -118,7 +122,7 @@ static class ConsoleHelper
         }
     }
 
-    public static int SelectionMenu(List<string> options, string title, string description, bool horizontal)
+    public static int SelectionMenu(List<string> options, string title, string description, bool horizontal, string information = null, List<string> details = null)
     {
         if (options is null || options.Count == 0)
         {
@@ -148,8 +152,13 @@ static class ConsoleHelper
 
             Console.WriteLine("============================================================");
             Console.WriteLine();
-            Console.WriteLine("  ESC: Back          ← →: Navigate          Enter: Select");
+            Console.WriteLine("  ESC: Back          C: Cancel          ← →: Navigate          Enter: Select");
             Console.WriteLine();
+
+            if (information != null)
+            {
+                Console.WriteLine(information);
+            }
 
             for (int i = 0; i < options.Count; i++)
             {
@@ -171,11 +180,28 @@ static class ConsoleHelper
             }
             Console.WriteLine();
 
+            if (details != null)
+            {
+                for (int i = 0; i < details.Count; i++)
+                {
+                    Console.Write($"   {details[i]}");
+                    if (i < details.Count - 1)
+                    {
+                        Console.Write("  |");
+                    }
+                }
+                Console.WriteLine();
+            }
+
             ConsoleKey choice = Console.ReadKey(true).Key;
 
             if (choice == ConsoleKey.Escape)
             {
                 return -1;
+            }
+            else if (choice == ConsoleKey.C)
+            {
+                return -2;
             }
             else if (choice == ConsoleKey.D || choice == ConsoleKey.RightArrow)
             {
