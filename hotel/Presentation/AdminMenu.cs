@@ -737,20 +737,17 @@ public static class AdminMenu
                 }
             }
 
-            if (floor == 4)
+            Console.Write("-----");
+            foreach (var room in floorRooms)
             {
-                Console.Write("-----");
-                foreach (var room in floorRooms)
-                {
-                    Console.Write("------");
-                }
-                Console.WriteLine("-");
+                Console.Write("-------");
             }
+            Console.WriteLine("-");
 
             Console.Write($"| F{floor} ");
             foreach (var room in floorRooms)
             {
-                Console.Write("| ");
+                Console.Write("|  ");
                 Console.ForegroundColor = room.RoomAvailability switch
                 {
                     RoomAvailability.Maintenance => ConsoleColor.DarkGray,
@@ -767,7 +764,7 @@ public static class AdminMenu
             Console.Write("-----");
             foreach (var room in floorRooms)
             {
-                Console.Write("------");
+                Console.Write("-------");
             }
             Console.WriteLine("-");
         }
