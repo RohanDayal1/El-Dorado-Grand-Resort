@@ -8,4 +8,5 @@ public class RoomDetailModel
     public int PricePerNight { get; set; }
     public string? BedType { get; set; }
     public string Status { get; set; } = string.Empty;
+    public RoomAvailability RoomAvailability { get; set; }
 }
