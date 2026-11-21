@@ -8,7 +8,9 @@ public static class FacilityReservationMenu
     {
         var bookingLogic = new FacilityReservationLogic();
         ConsoleHelper.ShowHeader("BOOK A FACILITY SERVICE");
+
         var hotelReservations = bookingLogic.GetFacilityReservations(account, DateTime.Now);
+
         if (hotelReservations.Count == 0)
         {
             Console.WriteLine("  You need a confirmed hotel stay to book a facility service.");
@@ -19,13 +21,16 @@ public static class FacilityReservationMenu
         var hotelReservation = ChooseHotelReservation(hotelReservations);
         if (hotelReservation == null)
             return;
+
         var selectedSlot = ChooseAppointmentTime(account, hotelReservation, service);
         if (selectedSlot == null)
             return;
+
         int? numberOfPeople = NumberOfPeople(
             hotelReservation,
             selectedSlot.Value.RemainingCapacity
         );
+
         if (numberOfPeople == null)
             return;
 
@@ -52,6 +57,7 @@ public static class FacilityReservationMenu
             numberOfPeople.Value,
             DateTime.Now
         );
+
         if (bookingResult.Errors.Count > 0)
         {
             ShowValidationErrors(bookingResult.Errors);
@@ -78,23 +84,22 @@ public static class FacilityReservationMenu
     {
         if (hotelReservations.Count == 1)
             return hotelReservations[0];
-        Console.WriteLine("  SELECT YOUR HOTEL STAY");
-        for (int i = 0; i < hotelReservations.Count; i++)
+
+        List<string> reservationNames = new List<string>();
+
+        foreach (ReservationModel reservation in hotelReservations)
         {
-            var hotelReservation = hotelReservations[i];
-            Console.WriteLine(
-                $"  [{i + 1}] {hotelReservation.ReservationCode} | {hotelReservation.CheckInDate:yyyy-MM-dd} to {hotelReservation.CheckOutDate:yyyy-MM-dd}"
+            reservationNames.Add(
+                $"{reservation.ReservationCode} | {reservation.CheckInDate:yyyy-MM-dd} to {reservation.CheckOutDate:yyyy-MM-dd}"
             );
         }
-        while (true)
-        {
-            int? choice = ReservationInput.ReadInt("Choose a hotel stay: ");
-            if (choice == null)
-                return null;
-            if (choice >= 1 && choice <= hotelReservations.Count)
-                return hotelReservations[choice.Value - 1];
-            Console.WriteLine("  Choose one of the listed stays.");
-        }
+
+        int choice = ConsoleHelper.SelectionMenu(reservationNames, "SELECT YOUR HOTEL STAY", "Choose the stay for your facility booking");
+
+        if (choice == -1)
+            return null;
+
+        return hotelReservations[choice];
     }
 
     private static (DateTime StartTime, int RemainingCapacity)? ChooseAppointmentTime(
@@ -104,23 +109,20 @@ public static class FacilityReservationMenu
     )
     {
         var bookingLogic = new FacilityReservationLogic();
-        ConsoleHelper.ShowHeader("SELECT YOUR APPOINTMENT");
-        Console.WriteLine($"  Hotel reservation: {hotelReservation.ReservationCode}");
-        Console.WriteLine(
-            $"  Stay: {hotelReservation.CheckInDate:yyyy-MM-dd} to {hotelReservation.CheckOutDate:yyyy-MM-dd}"
-        );
-        Console.WriteLine("  Appointments must take place before the checkout date.");
-        Console.WriteLine(
-            $"  Service: {service.Name} | Duration: {service.DurationMinutes} minutes\n"
-        );
 
         while (true)
         {
-            DateTime? appointmentDate = ReservationInput.ReadDate(
-                "Appointment date (yyyy-MM-dd): "
-            );
+            ConsoleHelper.ShowHeader("SELECT YOUR APPOINTMENT");
+            Console.WriteLine($"  Hotel reservation: {hotelReservation.ReservationCode}");
+            Console.WriteLine($"  Stay: {hotelReservation.CheckInDate:yyyy-MM-dd} to {hotelReservation.CheckOutDate:yyyy-MM-dd}");
+            Console.WriteLine("  Appointments must take place before the checkout date.");
+            Console.WriteLine($"  Service: {service.Name} | Duration: {service.DurationMinutes} minutes\n");
+
+            DateTime? appointmentDate = ReservationInput.ReadDate("Appointment date (yyyy-MM-dd): ");
+
             if (appointmentDate == null)
                 return null;
+
             var availableSlots = bookingLogic.GetAvailableStartTimes(
                 account,
                 hotelReservation.ReservationId,
@@ -128,6 +130,7 @@ public static class FacilityReservationMenu
                 appointmentDate.Value,
                 DateTime.Now
             );
+
             if (availableSlots.Count == 0)
             {
                 Console.WriteLine("  No start times are available for this date.");
@@ -135,18 +138,19 @@ public static class FacilityReservationMenu
                 continue;
             }
 
-            Console.WriteLine($"\n  AVAILABLE START TIMES | {appointmentDate:yyyy-MM-dd}");
-            for (int i = 0; i < availableSlots.Count; i++)
-                Console.WriteLine($"  [{i + 1}] {availableSlots[i].StartTime:HH:mm}");
-            while (true)
+            List<string> availableTimes = new List<string>();
+
+            foreach (var slot in availableSlots)
             {
-                int? choice = ReservationInput.ReadInt("Choose a start time: ");
-                if (choice == null)
-                    return null;
-                if (choice >= 1 && choice <= availableSlots.Count)
-                    return availableSlots[choice.Value - 1];
-                Console.WriteLine("  Choose one of the listed start times.");
+                availableTimes.Add(slot.StartTime.ToString("HH:mm"));
             }
+
+            int choice = ConsoleHelper.SelectionMenu(availableTimes, "AVAILABLE START TIMES", $"Choose an appointment time for {appointmentDate.Value:yyyy-MM-dd}");
+
+            if (choice == -1)
+                return null;
+
+            return availableSlots[choice];
         }
     }
 
@@ -154,6 +158,7 @@ public static class FacilityReservationMenu
     {
         var bookingLogic = new FacilityReservationLogic();
         ConsoleHelper.ShowHeader("NUMBER OF PEOPLE");
+
         Console.WriteLine(
             $"  Your stay: {hotelReservation.Adults} adults, {hotelReservation.Children} children"
         );
@@ -161,19 +166,24 @@ public static class FacilityReservationMenu
         Console.WriteLine(
             "  Everyone in this booking receives the same service at the same time.\n"
         );
+
         while (true)
         {
             int? numberOfPeople = ReservationInput.ReadInt("Number of people: ");
+
             if (numberOfPeople == null)
                 return null;
+
             var errors = bookingLogic.ValidatePartySize(
                 numberOfPeople.Value,
                 hotelReservation.Adults,
                 hotelReservation.Children,
                 remainingCapacity
             );
+
             if (errors.Count == 0)
                 return numberOfPeople;
+
             ShowValidationErrors(errors);
         }
     }
@@ -194,13 +204,17 @@ public static class FacilityReservationMenu
         Console.WriteLine($"  Date:              {startTime:yyyy-MM-dd}");
         Console.WriteLine($"  Start time:        {startTime:HH:mm}");
         Console.WriteLine($"  People:            {numberOfPeople}\n");
+
         while (true)
         {
             string? choice = ReservationInput.ReadText("Confirm booking? (y/n): ");
+
             if (choice == null || choice == "n")
                 return false;
+
             if (choice == "y")
                 return true;
+
             Console.WriteLine("  Enter y to confirm, n to abandon, or q to cancel.");
         }
     }
@@ -209,7 +223,7 @@ public static class FacilityReservationMenu
     {
         Console.WriteLine($"    Booking reference: FAC-{booking.FacilityReservationId}");
         Console.WriteLine($"    Facility:          {booking.FacilityName}");
-        Console.WriteLine($"    Service:           {booking.ServiceName}");
+        Console.WriteLine($"    Service:            {booking.ServiceName}");
         Console.WriteLine($"    Date:              {booking.ReservationDate:yyyy-MM-dd}");
         Console.WriteLine($"    Start time:        {booking.StartTime:HH:mm}");
         Console.WriteLine($"    People:            {booking.PartySize}");
@@ -231,7 +245,23 @@ public static class FacilityReservationMenu
                     "There are not enough places available for this group.",
                 _ => "Please check your booking details.",
             };
+
             Console.WriteLine($"  {message}");
         }
+    }
+
+    public static string GetBookingDetails(FacilityReservationModel booking)
+    {
+        string details = "";
+
+        details += $"    Booking reference: FAC-{booking.FacilityReservationId}\n";
+        details += $"    Facility:          {booking.FacilityName}\n";
+        details += $"    Service:           {booking.ServiceName}\n";
+        details += $"    Date:              {booking.ReservationDate:yyyy-MM-dd}\n";
+        details += $"    Start time:        {booking.StartTime:HH:mm}\n";
+        details += $"    People:            {booking.PartySize}\n";
+        details += $"    Status:            {booking.Status}\n";
+
+        return details;
     }
 }

@@ -7,52 +7,55 @@ public static class AdminMenu
         bool viewadminmenu = true;
         while (viewadminmenu)
         {
-            ConsoleHelper.ClearScreen();
-            ShowAdminMenu();
-            Console.Write("Select an option: ");
-            string? choice = Console.ReadLine()?.Trim();
-			if (choice == null)
-				return;
+            List<string> options = new()
+            {
+                "View all registered guests",
+                "View all reservations",
+                "View existing reservation",
+                "Edit an existing reservation",
+                "Cancel an existing reservation",
+                "Open Room Menu"
+            };
+
+            int choice = ConsoleHelper.SelectionMenu(options, "ADMIN MENU");
+
+            if (choice == -1)
+                return;
 
             switch (choice)
             {
-                case "1":
+                case 0:
                     ShowAllGuests();
                     break;
-                case "2":
+                case 1:
                     ShowAllReservation();
                     break;
-                case "3":
+                case 2:
                     ShowReservationDetails();
                     break;
-                case "4":
+                case 3:
                     ShowEditReservation();
                     break;
-                case "5":
+                case 4:
                     ShowCancelReservation();
                     break;
-                case "6":
+                case 5:
                     StartRoomMenu();
                     continue;
-                case "0":
-                    viewadminmenu = false;
-                    break;
-                default:
-                    Console.WriteLine("invalid option");
-                    break;
             }
-        if (viewadminmenu)
-        {
-            Console.Write("Press Enter to return to the admin menu...");
-            Console.ReadLine();
-        }
+
+            if (viewadminmenu)
+            {
+                Console.Write("Press Enter to return to the admin menu...");
+                Console.ReadLine();
+            }
         }
     }
 
     public static void ShowAdminMenu()
     {
         ConsoleHelper.ClearScreen();
-		Console.WriteLine(Border);
+        Console.WriteLine(Border);
         Console.WriteLine("  EL DORADO GRAND RESORT  |  ADMIN MENU");
         Console.WriteLine(Border);
         Console.WriteLine();
@@ -71,43 +74,50 @@ public static class AdminMenu
         bool viewroommenu = true;
         while (viewroommenu)
         {
-            ConsoleHelper.ClearScreen();
-            ShowRoomMenu();
-            Console.Write("Select an option: ");
-            string? choice = Console.ReadLine()?.Trim();
-			if (choice == null)
-				return;
-            
+            List<string> options = new()
+            {
+                "View all rooms",
+                "Add or activate a room",
+                "Add new room type",
+                "Edit a room's type",
+                "Edit a roomtype information's",
+                "Deactivate a room",
+                "View floor plan"
+            };
+
+            int choice = ConsoleHelper.SelectionMenu(options, "ROOM MENU");
+
+            if (choice == -1)
+                return;
+
             switch (choice)
             {
-                case "1":
+                case 0:
                     ShowAllRooms();
                     break;
-                case "2":
+                case 1:
                     NewHotelRoom();
                     break;
-                case "3":
+                case 2:
                     NewRoomType();
                     break;
-                case "4":
+                case 3:
                     ShowEditRoomTypeOfRoom();
                     break;
-                case "5":
+                case 4:
                     ShowEditRoomTypeInformation();
                     break;
-                case "6":
+                case 5:
                     ShowRoomDeactivation();
                     break;
-                case "7":
+                case 6:
                     ShowFloorPlan();
-                    break;
-                case "0":
-                    viewroommenu = false;
                     break;
                 default:
                     Console.WriteLine("invalid option");
                     continue;
             }
+
             if (viewroommenu)
             {
                 Console.Write("Press Enter to return to the room menu...");
@@ -119,7 +129,7 @@ public static class AdminMenu
     public static void ShowRoomMenu()
     {
         ConsoleHelper.ClearScreen();
-		Console.WriteLine(Border);
+        Console.WriteLine(Border);
         Console.WriteLine("  EL DORADO GRAND RESORT  |  ROOM MENU");
         Console.WriteLine(Border);
         Console.WriteLine();
