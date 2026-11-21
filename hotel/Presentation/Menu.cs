@@ -11,13 +11,35 @@ public static class Menu
 		{
 			ShowHomePage(signedInAccount);
 
-			string? choice = Console.ReadLine()?.Trim();
-			if (choice == null)
+			List<string> options = new List<string>
+			{
+				"About us",
+				"Our facilities",
+				"Contact us",
+				signedInAccount == null ? "Login" : "My home",
+				signedInAccount == null ? "Register" : "Log out",
+				signedInAccount == null ? "Make a reservation (guest checkout)" : "View my reservations",
+				signedInAccount == null ? "Reservation overview (email + code)" : "Make a reservation"
+			};
+
+			if (new AdminLogic().IsAdmin(signedInAccount))
+			{
+				options.Add("Admin menu");
+			}
+
+			options.Add("Exit");
+
+			int choice = ConsoleHelper.SelectionMenu(options, "MAIN MENU");
+
+			if (choice == -1)
+			{
+				Console.WriteLine("\nThank you for visiting El Dorado Grand Resort. See you soon!");
 				return;
+			}
 
 			switch (choice)
 			{
-				case "1":
+				case 0:
 					ShowPage("ABOUT US", new[]
 					{
 						"Welcome to El Dorado Grand Resort.",
@@ -28,21 +50,21 @@ public static class Menu
 						"Our team is here to make every stay special."
 					});
 					break;
-				case "2":
+				case 1:
 					FacilitiesMenu.Start(signedInAccount);
 					break;
-				case "3":
+				case 2:
 					ShowPage("CONTACT US", new[]
 					{
 						"Our team will be happy to help you.",
 						"",
 						"Email:   info@eldoradograndresort.com",
 						"Resort:  El Dorado Grand Resort",
-                        "Address:  123 Paradise Road, Beach City, Country",
-                        "Phone:   +1 (555) 123-4567"
+						"Address:  123 Paradise Road, Beach City, Country",
+						"Phone:   +1 (555) 123-4567"
 					});
 					break;
-				case "4":
+				case 3:
 					if (signedInAccount == null)
 					{
 						signedInAccount = Login();
@@ -56,7 +78,7 @@ public static class Menu
 						ShowMemberHome(signedInAccount);
 					}
 					break;
-				case "5":
+				case 4:
 					if (signedInAccount == null)
 					{
 						Register();
@@ -68,7 +90,7 @@ public static class Menu
 						new AccountsLogic().Logout();
 					}
 					break;
-				case "6":
+				case 5:
 					if (signedInAccount == null)
 					{
 						ReservationMenu.Start();
@@ -78,7 +100,7 @@ public static class Menu
 						ReservationPresentation.ShowReservations(signedInAccount);
 					}
 					break;
-				case "7":
+				case 6:
 					if (signedInAccount == null)
 					{
 						ReservationOverview.LookupReservation();
@@ -88,22 +110,20 @@ public static class Menu
 						ReservationMenu.Start(signedInAccount);
 					}
 					break;
-				case "8":
+				case 7:
 					if (new AdminLogic().IsAdmin(signedInAccount))
 					{
 						AdminMenu.StartAdminMenu();
 					}
 					else
 					{
-						Console.WriteLine("\nInvalid choice. Please choose one of the options shown.");
+						Console.WriteLine("\nThank you for visiting El Dorado Grand Resort. See you soon!");
+						running = false;
 					}
 					break;
-				case "0":
+				case 8:
 					Console.WriteLine("\nThank you for visiting El Dorado Grand Resort. See you soon!");
 					running = false;
-					break;
-				default:
-					Console.WriteLine("\nInvalid choice. Please choose one of the options shown.");
 					break;
 			}
 		}
@@ -121,24 +141,6 @@ public static class Menu
 			? "  Welcome! What would you like to know?"
 			: $"  Welcome back, {signedInAccount.FirstName} {signedInAccount.LastName}!");
 		Console.WriteLine();
-		Console.WriteLine("  [1] About us");
-		Console.WriteLine("  [2] Our facilities");
-		Console.WriteLine("  [3] Contact us");
-		Console.WriteLine(signedInAccount == null ? "  [4] Login" : "  [4] My home");
-		Console.WriteLine(signedInAccount == null ? "  [5] Register" : "  [5] Log out");
-		Console.WriteLine(signedInAccount == null
-			? "  [6] Make a reservation (guest checkout)"
-			: "  [6] View my reservations");
-		Console.WriteLine(signedInAccount == null
-			? "  [7] Reservation overview (email + code)"
-			: "  [7] Make a reservation");
-		if (new AdminLogic().IsAdmin(signedInAccount))
-		{
-			Console.WriteLine("  [8] Admin menu");
-		}
-		Console.WriteLine("  [0] Exit");
-		Console.WriteLine();
-		Console.Write("  Select an option: ");
 	}
 
 	private static void ShowPage(string title, string[] lines)
