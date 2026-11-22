@@ -62,10 +62,12 @@ public static class ReservationPresentation
                 }
             }
 
+            ReviewModel? review = new ReviewLogic().GetByReservationId(selectedReservation.ReservationId);
             int action = ConsoleHelper.SelectionMenu(new List<string>
             {
                 "Modify reservation",
-                "Cancel reservation"
+                "Cancel reservation",
+                review == null ? "Leave a review" : "View my review"
             }, "RESERVATION DETAILS", "Choose what you want to do", null, reservationDetails);
 
             if (action == -1)
@@ -90,6 +92,10 @@ public static class ReservationPresentation
                     ConsoleHelper.WaitForEnter();
                     return;
                 }
+            }
+            else if (action == 2)
+            {
+                ReviewMenu.Start(selectedReservation);
             }
         }
     }
