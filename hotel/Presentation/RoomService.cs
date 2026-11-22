@@ -89,7 +89,7 @@ public static class RoomService
         switch (action)
         {
             case -2:
-            Console.WriteLine("Succesfully confirmed ur order. Your order will arrive soon to room ...");
+            Console.WriteLine("Succesfully confirmed your order. Your order will arrive soon to room ...");
             break;
 
             case 1:

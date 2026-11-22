@@ -24,7 +24,7 @@ public static class FacilitiesMenu
 
             int choice = ConsoleHelper.SelectionMenu(facilityNames, "FACILITIES", "Choose a facility");
 
-            if (choice == -1)
+            if (choice == -1 || choice == -2)
                 return;
 
             FacilityModel selectedFacility = hotelFacilities[choice];
@@ -97,7 +97,7 @@ public static class FacilitiesMenu
 
         int choice = ConsoleHelper.SelectionMenu(serviceNames, "AVAILABLE SERVICES", "Choose a service");
 
-        if (choice == -1)
+        if (choice == -1 || choice == -2)
             return null;
 
         return facilityServices[choice];

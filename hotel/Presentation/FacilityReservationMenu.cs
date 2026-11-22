@@ -96,7 +96,7 @@ public static class FacilityReservationMenu
 
         int choice = ConsoleHelper.SelectionMenu(reservationNames, "SELECT YOUR HOTEL STAY", "Choose the stay for your facility booking");
 
-        if (choice == -1)
+        if (choice == -1 || choice == -2)
             return null;
 
         return hotelReservations[choice];
@@ -147,7 +147,7 @@ public static class FacilityReservationMenu
 
             int choice = ConsoleHelper.SelectionMenu(availableTimes, "AVAILABLE START TIMES", $"Choose an appointment time for {appointmentDate.Value:yyyy-MM-dd}");
 
-            if (choice == -1)
+            if (choice == -1 || choice == -2)
                 return null;
 
             return availableSlots[choice];

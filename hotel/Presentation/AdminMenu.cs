@@ -19,7 +19,7 @@ public static class AdminMenu
 
             int choice = ConsoleHelper.SelectionMenu(options, "ADMIN MENU");
 
-            if (choice == -1)
+            if (choice == -1 || choice == -2)
                 return;
 
             switch (choice)
@@ -86,7 +86,7 @@ public static class AdminMenu
 
             int choice = ConsoleHelper.SelectionMenu(options, "ROOM MENU");
 
-            if (choice == -1)
+            if (choice == -1 || choice == -2)
                 return;
 
             switch (choice)

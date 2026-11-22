@@ -31,7 +31,7 @@ public static class Menu
 
 			int choice = ConsoleHelper.SelectionMenu(options, "MAIN MENU");
 
-			if (choice == -1)
+			if (choice == -1 || choice == -2)
 			{
 				Console.WriteLine("\nThank you for visiting El Dorado Grand Resort. See you soon!");
 				return;

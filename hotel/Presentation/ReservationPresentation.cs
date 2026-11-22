@@ -33,7 +33,7 @@ public static class ReservationPresentation
 
             int num = ConsoleHelper.SelectionMenu(options, $"RESERVATIONS FOR {(account.FirstName + " " + account.LastName).ToUpper()}", "Select a reservation to view its details");
 
-            if (num == -1)
+            if (num == -1 || num == -2)
                 return;
 
             ReservationModel selectedReservation = reservations[num];
@@ -70,6 +70,9 @@ public static class ReservationPresentation
 
             if (action == -1)
                 continue;
+
+            if (action == -2)
+                return;
 
             if (action == 0)
             {
