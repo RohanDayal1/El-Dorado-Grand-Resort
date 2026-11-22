@@ -13,7 +13,6 @@ static class ConsoleHelper
         Console.WriteLine(border);
         Console.WriteLine($"  EL DORADO GRAND RESORT  |  {title}");
         Console.WriteLine(border);
-        Console.WriteLine("  Enter q at any input to cancel.");
         Console.WriteLine();
     }
 

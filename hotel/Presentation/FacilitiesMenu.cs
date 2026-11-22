@@ -31,6 +31,9 @@ public static class FacilitiesMenu
 
             ConsoleHelper.ShowHeader(selectedFacility.Name.ToUpper());
             ShowFacilityDetails(selectedFacility);
+            Console.WriteLine("\nPress any key to continue");
+            Console.ReadKey();
+            Console.Clear();
 
             if (selectedFacility.Name.Equals("Restaurant", StringComparison.OrdinalIgnoreCase))
             {
