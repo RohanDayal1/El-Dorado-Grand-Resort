@@ -1,5 +1,6 @@
 public static class ReviewValidator
-{    public static List<ReviewErrors> ValidateStay(
+{
+    public static List<ReviewErrors> ValidateStay(
         ReservationModel? reservation,
         bool hasReview,
         DateTime today

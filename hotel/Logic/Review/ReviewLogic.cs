@@ -41,6 +41,7 @@ public class ReviewLogic
         review.ReviewId = ReviewAccess.InsertReview(review);
         return (review, errors);
     }
+
     public ReviewModel? GetByReservationId(int reservationId)
     {
         AccountModel? account = AccountsLogic.CurrentAccount;

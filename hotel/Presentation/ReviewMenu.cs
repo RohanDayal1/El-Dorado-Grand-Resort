@@ -48,7 +48,7 @@ public static class ReviewMenu
             "Reviews cannot be changed or deleted",
             information: details
         );
-        
+
         if (choice != 0)
             return;
 
