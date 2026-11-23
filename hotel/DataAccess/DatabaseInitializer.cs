@@ -15,6 +15,8 @@ public static class DatabaseInitializer
 
         connection.Execute(
             @"
+            DROP TABLE IF EXISTS RoomServiceOrderItem;
+            DROP TABLE IF EXISTS RoomServiceOrder;
             DROP TABLE IF EXISTS Facility_Reservation;
             DROP TABLE IF EXISTS Facility_Service;
             DROP TABLE IF EXISTS Activity_Reservation;
@@ -27,8 +29,6 @@ public static class DatabaseInitializer
             DROP TABLE IF EXISTS Activity;
             DROP TABLE IF EXISTS Room_Type;
             DROP TABLE IF EXISTS User;
-            DROP TABLE IF EXISTS RoomServiceOrderItem;
-            DROP TABLE IF EXISTS RoomServiceOrder;
         "
         );
 

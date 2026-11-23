@@ -19,15 +19,21 @@ public static class RoomServiceAccess
         return null;
     }
 
-    public static int GetRoomNumber(int reservationId)
+    public static List<int> GetRoomNumbers(int reservationId)
     {
         string sql = "SELECT Room_Id FROM Reservation_Room WHERE Reservation_Id = @ReservationId";
+        List<int> roomIds = _connection.Query<int>(sql, new { ReservationId = reservationId }).ToList();
 
-        int roomId = _connection.QueryFirstOrDefault<int>(sql, new { ReservationId = reservationId });
+        List<int> roomNumbers = new List<int>();
 
-        string roomSql = "SELECT RoomNumber FROM Room WHERE Room_Id = @RoomId";
+        foreach (int roomId in roomIds)
+        {
+            string roomSql = "SELECT RoomNumber FROM Room WHERE Room_Id = @RoomId";
+            int roomNumber = _connection.QueryFirstOrDefault<int>(roomSql, new { RoomId = roomId });
+            roomNumbers.Add(roomNumber);
+        }
 
-        return _connection.QueryFirstOrDefault<int>(roomSql, new { RoomId = roomId });
+        return roomNumbers;
     }
 
     public static int SaveOrder(RoomServiceOrderModel order)
