@@ -86,8 +86,7 @@ public static class RoomService
 
         while (true)
         {
-            List<string> options = availableItems.Select(item =>
-                item.Quantity > 0 ? $"{item.Name} (Added: {item.Quantity})" : item.Name).ToList();
+            List<string> options = availableItems.Select(item => item.Quantity > 0 ? $"{item.Name} (Added: {item.Quantity})" : item.Name).ToList();
 
             int choice = ConsoleHelper.SelectionMenu(options, "ROOM SERVICE", "Select the items you want:", details, "Press C to finish the order selection.\n");
 
@@ -112,22 +111,12 @@ public static class RoomService
 
         List<string> confirmationOptions = new List<string> { "Yes", "No" };
 
-        int roomConfirmation = ConsoleHelper.SelectionMenu(
-            confirmationOptions,
-            "CONFIRM ROOM",
-            "Please confirm your room number.",
-            true,
-            $"Your room number: {roomNumber}");
+        int roomConfirmation = ConsoleHelper.SelectionMenu(confirmationOptions, "CONFIRM ROOM", "Please confirm your room number.", true, $"Your room number: {roomNumber}");
 
         if (roomConfirmation != 0)
             return;
 
-        int confirmation = ConsoleHelper.SelectionMenu(
-            confirmationOptions,
-            "ORDER SUMMARY",
-            "Would you like to confirm your order?",
-            true,
-            $"{summary}\nTotal: €{total:F2}");
+        int confirmation = ConsoleHelper.SelectionMenu(confirmationOptions, "ORDER SUMMARY", "Would you like to confirm your order?", true, $"{summary}\nTotal: €{total:F2}");
 
         if (confirmation != 0)
         {

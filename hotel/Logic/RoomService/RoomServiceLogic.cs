@@ -75,13 +75,11 @@ public class RoomServiceLogic
     {
         if (reservation.Status != "confirmed" || reservation.CheckInDate.Date > DateTime.Today || reservation.CheckOutDate.Date <= DateTime.Today)
         {
-            Console.WriteLine("Room service is only available during an active stay.");
             return -1;
         }
 
         if (!ValidateOrder(items))
         {
-            Console.WriteLine("The order is not valid.");
             return -1;
         }
 
