@@ -1,7 +1,15 @@
 public class RoomServiceLogic
 {
-    //getreservation
-    //roomnumber
+    public ReservationModel? GetActiveReservation(int userId)
+    {
+       return RoomServiceAccess.GetActiveReservation(userId);
+    }
+
+    public int GetRoomNumber(int reservationId)
+    {
+        return RoomServiceAccess.GetRoomNumber(reservationId);
+    }
+    
     //getfood ? mischien
     //housekeeping
     //Extra towels

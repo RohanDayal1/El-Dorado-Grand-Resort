@@ -1,15 +1,22 @@
 using Dapper;
 using Microsoft.Data.Sqlite;
 
-public static class RoomServiceAcces
+public static class RoomServiceAccess
 {
     private static readonly SqliteConnection _connection = new($"Data Source=DataSources/el_dorado.db");
 
     public static ReservationModel? GetActiveReservation(int userId)
     {
         string sql = "SELECT Reservation_Id AS ReservationId, ReservationCode, User_Id AS UserId, CheckInDate, CheckOutDate, Adults, Children, TotalCost, Status FROM Reservation WHERE User_Id = @UserId AND Status = 'confirmed'";
+        List<ReservationModel> reservations = _connection.Query<ReservationModel>(sql, new { UserId = userId }).ToList();
 
-        return _connection.QueryFirstOrDefault<ReservationModel>(sql, new { UserId = userId });
+        foreach (ReservationModel reservation in reservations)
+        {
+            if (reservation.CheckInDate.Date <= DateTime.Today && reservation.CheckOutDate.Date > DateTime.Today)
+                return reservation;
+        }
+
+        return null;
     }
 
     public static int GetRoomNumber(int reservationId)
