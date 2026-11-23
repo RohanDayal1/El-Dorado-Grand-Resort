@@ -27,6 +27,8 @@ public static class DatabaseInitializer
             DROP TABLE IF EXISTS Activity;
             DROP TABLE IF EXISTS Room_Type;
             DROP TABLE IF EXISTS User;
+            DROP TABLE IF EXISTS RoomServiceOrderItem;
+            DROP TABLE IF EXISTS RoomServiceOrder;
         "
         );
 
@@ -97,6 +99,25 @@ public static class DatabaseInitializer
                 PRIMARY KEY (Reservation_Id, Room_Id),
                 FOREIGN KEY (Reservation_Id) REFERENCES Reservation(Reservation_Id) ON DELETE CASCADE,
                 FOREIGN KEY (Room_Id) REFERENCES Room(Room_Id) ON DELETE RESTRICT
+            );
+
+            CREATE TABLE RoomServiceOrder (
+            RoomServiceOrder_Id INTEGER PRIMARY KEY,
+            Reservation_Id INTEGER NOT NULL,
+            RoomNumber INTEGER NOT NULL,
+            OrderDate TEXT NOT NULL,
+            Status TEXT NOT NULL,
+            TotalPrice REAL NOT NULL,
+            FOREIGN KEY (Reservation_Id) REFERENCES Reservation(Reservation_Id)
+            );
+
+            CREATE TABLE RoomServiceOrderItem (
+            RoomServiceOrderItem_Id INTEGER PRIMARY KEY,
+            RoomServiceOrder_Id INTEGER NOT NULL,
+            Name TEXT NOT NULL,
+            Quantity INTEGER NOT NULL,
+            Price REAL NOT NULL,
+            FOREIGN KEY (RoomServiceOrder_Id) REFERENCES RoomServiceOrder(RoomServiceOrder_Id)
             );
 
             CREATE TABLE Facility (

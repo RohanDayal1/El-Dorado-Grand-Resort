@@ -39,5 +39,21 @@ public static class RoomServiceAcces
 
         return orderId;
     }
+
+    public static List<RoomServiceOrderModel> GetOrders(int reservationId)
+    {
+        string sql = "SELECT RoomServiceOrder_Id AS Id, Reservation_Id AS ReservationId, RoomNumber, OrderDate AS Date, Status, TotalPrice AS Total FROM RoomServiceOrder WHERE Reservation_Id = @ReservationId";
+
+        List<RoomServiceOrderModel> orders = _connection.Query<RoomServiceOrderModel>(sql, new { ReservationId = reservationId }).ToList();
+
+        foreach (RoomServiceOrderModel order in orders)
+        {
+            string itemSql = "SELECT RoomServiceOrderItem_Id AS Id, RoomServiceOrder_Id AS OrderId, Name, Quantity, Price FROM RoomServiceOrderItem WHERE RoomServiceOrder_Id = @OrderId";
+
+            order.Items = _connection.Query<RoomServiceOrderItemModel>(itemSql, new { OrderId = order.Id }).ToList();
+        }
+
+        return orders;
+    }
     
 }
