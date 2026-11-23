@@ -82,15 +82,6 @@ public static class DatabaseInitializer
                 FOREIGN KEY (User_Id) REFERENCES User(User_Id) ON DELETE RESTRICT
             );
 
-            CREATE TABLE Review (
-                Review_Id INTEGER PRIMARY KEY,
-                Reservation_Id INTEGER NOT NULL UNIQUE,
-                Rating INTEGER NOT NULL,
-                Feedback TEXT,
-                CreatedAt TEXT NOT NULL,
-                FOREIGN KEY (Reservation_Id) REFERENCES Reservation(Reservation_Id) ON DELETE RESTRICT
-            );
-
             CREATE TABLE Reservation_Room (
                 Reservation_Id INTEGER NOT NULL,
                 Room_Id INTEGER NOT NULL,
@@ -201,10 +192,6 @@ public static class DatabaseInitializer
                 (2, 'P4TW9B', 3, '2026-11-10', '2026-11-12', 2, 2, 400.00, 'confirmed'),
                 (3, 'H8ZN3C', 4, '2026-12-01', '2026-12-03', 3, 0, 500.00, 'cancelled'),
                 (4, 'R2VD6L', 7, '2026-11-15', '2026-11-18', 2, 0, 600.00, 'confirmed');
-
-            INSERT INTO Review (Review_Id, Reservation_Id, Rating, Feedback, CreatedAt) VALUES
-                (1, 1, 5, 'Great stay! The room was clean and the staff were friendly.', '2026-11-05 10:00:00'),
-                (2, 2, 4, NULL, '2026-11-13 14:30:00');
 
             INSERT INTO Reservation_Room (Reservation_Id, Room_Id) VALUES
                 (1, 1), (2, 5), (3, 2), (3, 3), (4, 6);
