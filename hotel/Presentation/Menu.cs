@@ -120,6 +120,11 @@ public static class Menu
 					{
 						RoomService.Start(signedInAccount);
 					}
+					else
+					{
+						Console.WriteLine("\nThank you for visiting El Dorado Grand Resort. See you soon!");
+						running = false;
+					}
 					break;
 				case 8:
 					if (new AdminLogic().IsAdmin(signedInAccount))

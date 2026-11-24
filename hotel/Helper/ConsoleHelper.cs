@@ -29,10 +29,19 @@ static class ConsoleHelper
         Console.ReadKey(true);
     }
 
-    
-    public static int SelectionMenu(List<string> options, string title = "", string description = null, List<string> details = null, string information = null)
+    public static int SelectionMenu(List<string> options, string title = "", string description = null, List<string> details = null, string information = null, bool allowC = false)
     {
-        if (options is null || options.Count == 0)
+        return ShowSelectionMenu(options, title, description, false, information, details, allowC);
+    }
+
+    public static int SelectionMenu(List<string> options, string title, string description, bool horizontal, string information = null, List<string> details = null, bool allowC = false)
+    {
+        return ShowSelectionMenu(options, title, description, horizontal, information, details, allowC);
+    }
+
+    private static int ShowSelectionMenu(List<string> options, string title, string description, bool horizontal, string information, List<string> details, bool allowC)
+    {
+        if (options == null || options.Count == 0)
         {
             return -1;
         }
@@ -50,40 +59,16 @@ static class ConsoleHelper
         {
             Console.Clear();
 
-            Console.WriteLine("============================================================");
-            Console.WriteLine(title.PadLeft((60 + title.Length) / 2));
-            if (description != null)
+            ShowMenuHeader(title, description, horizontal, allowC);
+            ShowMenuInformation(information);
+
+            if (horizontal)
             {
-                Console.WriteLine(description.PadLeft((60 + description.Length) / 2));
+                ShowHorizontalOptions(options, index, details);
             }
-
-            Console.WriteLine("============================================================");
-            Console.WriteLine();
-            Console.WriteLine("  ESC: Back          ↑ ↓: Navigate          Enter: Select");
-            Console.WriteLine();
-
-            if (information != null)
+            else
             {
-                Console.WriteLine(information);
-            }
-
-            for (int i = 0; i < options.Count; i++)
-            {
-                if (index == i)
-                {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine($"       >  {options[i]}");
-                    Console.ResetColor();
-                }
-                else
-                {
-                    Console.WriteLine($"          {options[i]}");
-                }
-
-                if (details != null && i < details.Count)
-                {
-                    Console.WriteLine($"             {details[i]}");
-                }
+                ShowVerticalOptions(options, index, details);
             }
 
             ConsoleKey choice = Console.ReadKey(true).Key;
@@ -92,11 +77,12 @@ static class ConsoleHelper
             {
                 return -1;
             }
-            else if (choice == ConsoleKey.C)
+            else if (choice == ConsoleKey.C && allowC)
             {
                 return -2;
             }
-            else if (choice == ConsoleKey.S || choice == ConsoleKey.DownArrow)
+            else if ((!horizontal && (choice == ConsoleKey.S || choice == ConsoleKey.DownArrow)) ||
+                     (horizontal && (choice == ConsoleKey.D || choice == ConsoleKey.RightArrow)))
             {
                 index++;
 
@@ -105,7 +91,8 @@ static class ConsoleHelper
                     index = 0;
                 }
             }
-            else if (choice == ConsoleKey.W || choice == ConsoleKey.UpArrow)
+            else if ((!horizontal && (choice == ConsoleKey.W || choice == ConsoleKey.UpArrow)) ||
+                     (horizontal && (choice == ConsoleKey.A || choice == ConsoleKey.LeftArrow)))
             {
                 index--;
 
@@ -121,109 +108,111 @@ static class ConsoleHelper
         }
     }
 
-    public static int SelectionMenu(List<string> options, string title, string description, bool horizontal, string information = null, List<string> details = null)
+    private static void ShowMenuHeader(string title, string description, bool horizontal, bool allowC)
     {
-        if (options is null || options.Count == 0)
-        {
-            return -1;
-        }
-
-        int index = 0;
-
-        title = $"  EL DORADO GRAND RESORT  |  {title}";
+        Console.WriteLine("============================================================");
+        Console.WriteLine(title.PadLeft((60 + title.Length) / 2));
 
         if (description != null)
         {
-            description = $"  • {description}";
+            Console.WriteLine(description.PadLeft((60 + description.Length) / 2));
         }
 
-        while (true)
+        Console.WriteLine("============================================================");
+        Console.WriteLine();
+
+        if (horizontal)
         {
-            Console.Clear();
-
-            Console.WriteLine("============================================================");
-            Console.WriteLine(title.PadLeft((60 + title.Length) / 2));
-
-            if (description != null)
+            if (allowC)
             {
-                Console.WriteLine(description.PadLeft((60 + description.Length) / 2));
+                Console.WriteLine("  ESC: Back          C: Confirm          ← →: Navigate          Enter: Select");
+            }
+            else
+            {
+                Console.WriteLine("  ESC: Back          ← →: Navigate          Enter: Select");
+            }
+        }
+        else
+        {
+            if (allowC)
+            {
+                Console.WriteLine("  ESC: Back          C: Confirm          ↑ ↓: Navigate          Enter: Select");
+            }
+            else
+            {
+                Console.WriteLine("  ESC: Back          ↑ ↓: Navigate          Enter: Select");
+            }
+        }
+
+        Console.WriteLine();
+    }
+
+    private static void ShowMenuInformation(string information)
+    {
+        if (information != null)
+        {
+            Console.WriteLine(information);
+        }
+    }
+
+    private static void ShowVerticalOptions(List<string> options, int index, List<string> details)
+    {
+        for (int i = 0; i < options.Count; i++)
+        {
+            if (index == i)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"       >  {options[i]}");
+                Console.ResetColor();
+            }
+            else
+            {
+                Console.WriteLine($"          {options[i]}");
             }
 
-            Console.WriteLine("============================================================");
-            Console.WriteLine();
-            Console.WriteLine("  ESC: Back          C: Cancel          ← →: Navigate          Enter: Select");
-            Console.WriteLine();
-
-            if (information != null)
+            if (details != null && i < details.Count)
             {
-                Console.WriteLine(information);
+                Console.WriteLine($"             {details[i]}");
+            }
+        }
+    }
+
+    private static void ShowHorizontalOptions(List<string> options, int index, List<string> details)
+    {
+        for (int i = 0; i < options.Count; i++)
+        {
+            if (index == i)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write($" > {options[i]}");
+                Console.ResetColor();
+            }
+            else
+            {
+                Console.Write($"   {options[i]}");
             }
 
-            for (int i = 0; i < options.Count; i++)
+            if (i < options.Count - 1)
             {
-                if (index == i)
-                {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.Write($" > {options[i]}");
-                    Console.ResetColor();
-                }
-                else
-                {
-                    Console.Write($"   {options[i]}");
-                }
+                Console.Write("  |");
+            }
+        }
 
-                if (i < options.Count - 1)
+        Console.WriteLine();
+
+        if (details != null)
+        {
+            for (int i = 0; i < details.Count; i++)
+            {
+                Console.Write($"   {details[i]}");
+
+                if (i < details.Count - 1)
                 {
                     Console.Write("  |");
                 }
             }
+
             Console.WriteLine();
-
-            if (details != null)
-            {
-                for (int i = 0; i < details.Count; i++)
-                {
-                    Console.Write($"   {details[i]}");
-                    if (i < details.Count - 1)
-                    {
-                        Console.Write("  |");
-                    }
-                }
-                Console.WriteLine();
-            }
-
-            ConsoleKey choice = Console.ReadKey(true).Key;
-
-            if (choice == ConsoleKey.Escape)
-            {
-                return -1;
-            }
-            else if (choice == ConsoleKey.C)
-            {
-                return -2;
-            }
-            else if (choice == ConsoleKey.D || choice == ConsoleKey.RightArrow)
-            {
-                index++;
-
-                if (index >= options.Count)
-                {
-                    index = 0;
-                }
-            }
-            else if (choice == ConsoleKey.A || choice == ConsoleKey.LeftArrow)
-            {
-                index--;
-
-                if (index < 0)
-                {
-                    index = options.Count - 1;
-                }
-            }
-            else if (choice == ConsoleKey.Enter)
-            {
-                return index;
-            }
         }
     }
 

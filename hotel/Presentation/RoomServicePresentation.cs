@@ -88,9 +88,12 @@ public static class RoomService
         {
             List<string> options = availableItems.Select(item => item.Quantity > 0 ? $"{item.Name} (Added: {item.Quantity})" : item.Name).ToList();
 
-            int choice = ConsoleHelper.SelectionMenu(options, "ROOM SERVICE", "Select the items you want:", details, "Press C to finish the order selection.\n");
+            int choice = ConsoleHelper.SelectionMenu(options, "ROOM SERVICE", "Select the items you want:", details, "Press C to finish the order selection.\n",true);
 
-            if (choice == -1 || choice == -2)
+            if (choice == -1)
+                return;
+
+            if (choice == -2)
                 break;
 
             availableItems[choice].Quantity++;
@@ -168,7 +171,7 @@ public static class RoomService
                 Console.WriteLine($"    {item.Name} x {item.Quantity}");
             }
 
-            Console.WriteLine();
+            Console.WriteLine("-----------------------------");
         }
 
         ConsoleHelper.WaitForEnter();
