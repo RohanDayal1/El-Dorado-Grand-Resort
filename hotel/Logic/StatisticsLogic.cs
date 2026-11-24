@@ -1,7 +1,7 @@
 public class StatisticsLogic
 {
-    public ResortStatisticsModel GetResortStatistics()
+    public ResortStatisticsModel GetResortStatistics(DateTime? today = null)
     {
-        return StatisticsAccess.GetResortStatistics();
+        return StatisticsAccess.GetResortStatistics(today ?? DateTime.Today);
     }
 }
