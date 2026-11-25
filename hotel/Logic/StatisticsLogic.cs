@@ -11,7 +11,8 @@ public class StatisticsLogic
         var activeRoomIds = data.Rooms
             .Where(room => HasStatus(room.Status, "active"))
             .Select(room => room.RoomId)
-            .ToHashSet();
+            .Distinct()
+            .ToList();
         var occupiedRoomIds = data.ReservationRooms
             .Where(assignment =>
                 activeRoomIds.Contains(assignment.RoomId)
@@ -20,7 +21,8 @@ public class StatisticsLogic
                 && IsStayingOn(reservation, reportDate)
             )
             .Select(assignment => assignment.RoomId)
-            .ToHashSet();
+            .Distinct()
+            .ToList();
         var confirmedFacilityBookings = data.FacilityReservations
             .Where(booking =>
                 HasStatus(booking.Status, "confirmed")
