@@ -191,10 +191,21 @@ public static class DatabaseInitializer
                 (1, 'K7M2QX', 2, '2026-11-01', '2026-11-04', 2, 0, 300.00, 'confirmed'),
                 (2, 'P4TW9B', 3, '2026-11-10', '2026-11-12', 2, 2, 400.00, 'confirmed'),
                 (3, 'H8ZN3C', 4, '2026-12-01', '2026-12-03', 3, 0, 500.00, 'cancelled'),
-                (4, 'R2VD6L', 7, '2026-11-15', '2026-11-18', 2, 0, 600.00, 'confirmed');
+                (4, 'R2VD6L', 7, '2026-11-15', '2026-11-18', 2, 0, 600.00, 'confirmed'),
+                (5, 'B6NR4T', 3, '2026-11-05', '2026-11-08', 2, 0, 450.00, 'confirmed'),
+                (6, 'C9QW2K', 3, '2026-11-14', '2026-11-17', 1, 0, 300.00, 'confirmed'),
+                (7, 'D3VX7M', 3, '2026-11-20', '2026-11-24', 2, 2, 800.00, 'confirmed'),
+                (8, 'F8LK5P', 3, '2026-12-04', '2026-12-07', 2, 0, 900.00, 'confirmed'),
+                (9, 'G2TS6R', 2, '2026-11-19', '2026-11-22', 2, 0, 300.00, 'confirmed'),
+                (10, 'J5WM8N', 4, '2026-12-01', '2026-12-04', 2, 0, 450.00, 'confirmed'),
+                (11, 'L7PX3V', 5, '2026-11-06', '2026-11-09', 2, 1, 600.00, 'confirmed'),
+                (12, 'M4RK9W', 6, '2026-12-10', '2026-12-13', 3, 1, 900.00, 'confirmed'),
+                (13, 'N8VB2Q', 3, '2026-12-15', '2026-12-18', 2, 0, 300.00, 'cancelled');
 
             INSERT INTO Reservation_Room (Reservation_Id, Room_Id) VALUES
-                (1, 1), (2, 5), (3, 2), (3, 3), (4, 6);
+                (1, 1), (2, 5), (3, 2), (3, 3), (4, 6),
+                (5, 3), (6, 1), (7, 5), (8, 7), (9, 2),
+                (10, 4), (11, 6), (12, 3), (12, 4), (13, 1);
 
             INSERT INTO Facility (Facility_Id, Name, Description, Capacity, OpeningHours, ClosingHours, Location) VALUES
                 (1, 'Swimming Pool', 'Indoor heated swimming pool', 20, '07:00', '22:00', 'Ground floor'),
