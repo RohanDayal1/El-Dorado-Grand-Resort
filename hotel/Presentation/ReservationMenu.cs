@@ -205,7 +205,7 @@ public static class ReservationMenu
 
         int choice = ConsoleHelper.SelectionMenu(options, "BED PREFERENCE", "Choose a bed preference", true);
 
-        if (choice == -1)
+        if (choice == -1 || choice == -2)
             return null;
 
         if (choice == beds.Count)

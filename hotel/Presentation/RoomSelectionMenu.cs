@@ -102,7 +102,7 @@ public static class RoomSelectionMenu
 
         int choice = ConsoleHelper.SelectionMenu(options, "ADD ROOMS", "Choose a room type");
 
-        if (choice == -1)
+        if (choice == -1 || choice == -2)
             return true;
 
         RoomTypeModel selectedType = choices[choice];
@@ -291,7 +291,7 @@ public static class RoomSelectionMenu
 
         int choice = ConsoleHelper.SelectionMenu(options, "REMOVE A ROOM", "Choose a room to remove");
 
-        if (choice == -1)
+        if (choice == -1 || choice == -2)
             return false;
 
         selectedRooms.RemoveAt(choice);

@@ -21,6 +21,11 @@ public static class Menu
 				signedInAccount == null ? "Make a reservation (guest checkout)" : "View my reservations",
 				signedInAccount == null ? "Reservation overview (email + code)" : "Make a reservation"
 			};
+			
+			if (signedInAccount != null)
+			{
+				options.Add("Room Service");
+			}
 
 			if (new AdminLogic().IsAdmin(signedInAccount))
 			{
@@ -31,7 +36,7 @@ public static class Menu
 
 			int choice = ConsoleHelper.SelectionMenu(options, "MAIN MENU");
 
-			if (choice == -1)
+			if (choice == -1 || choice == -2)
 			{
 				Console.WriteLine("\nThank you for visiting El Dorado Grand Resort. See you soon!");
 				return;
@@ -111,6 +116,17 @@ public static class Menu
 					}
 					break;
 				case 7:
+					if (signedInAccount != null)
+					{
+						RoomService.Start(signedInAccount);
+					}
+					else
+					{
+						Console.WriteLine("\nThank you for visiting El Dorado Grand Resort. See you soon!");
+						running = false;
+					}
+					break;
+				case 8:
 					if (new AdminLogic().IsAdmin(signedInAccount))
 					{
 						AdminMenu.StartAdminMenu();
@@ -121,7 +137,7 @@ public static class Menu
 						running = false;
 					}
 					break;
-				case 8:
+				case 9:
 					Console.WriteLine("\nThank you for visiting El Dorado Grand Resort. See you soon!");
 					running = false;
 					break;

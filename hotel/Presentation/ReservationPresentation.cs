@@ -33,7 +33,7 @@ public static class ReservationPresentation
 
             int num = ConsoleHelper.SelectionMenu(options, $"RESERVATIONS FOR {(account.FirstName + " " + account.LastName).ToUpper()}", "Select a reservation to view its details");
 
-            if (num == -1)
+            if (num == -1 || num == -2)
                 return;
 
             ReservationModel selectedReservation = reservations[num];
@@ -62,14 +62,19 @@ public static class ReservationPresentation
                 }
             }
 
+            ReviewModel? review = new ReviewLogic().GetByReservationId(selectedReservation.ReservationId);
             int action = ConsoleHelper.SelectionMenu(new List<string>
             {
                 "Modify reservation",
-                "Cancel reservation"
+                "Cancel reservation",
+                review == null ? "Leave a review" : "View my review"
             }, "RESERVATION DETAILS", "Choose what you want to do", null, reservationDetails);
 
             if (action == -1)
                 continue;
+
+            if (action == -2)
+                return;
 
             if (action == 0)
             {
@@ -90,6 +95,10 @@ public static class ReservationPresentation
                     ConsoleHelper.WaitForEnter();
                     return;
                 }
+            }
+            else if (action == 2)
+            {
+                ReviewMenu.Start(selectedReservation);
             }
         }
     }

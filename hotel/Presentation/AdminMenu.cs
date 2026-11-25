@@ -14,12 +14,13 @@ public static class AdminMenu
                 "View existing reservation",
                 "Edit an existing reservation",
                 "Cancel an existing reservation",
-                "Open Room Menu"
+                "Open Room Menu",
+                "View reviews"
             };
 
             int choice = ConsoleHelper.SelectionMenu(options, "ADMIN MENU");
 
-            if (choice == -1)
+            if (choice == -1 || choice == -2)
                 return;
 
             switch (choice)
@@ -41,6 +42,9 @@ public static class AdminMenu
                     break;
                 case 5:
                     StartRoomMenu();
+                    continue;
+                case 6:
+                    ReviewMenu.ShowAllReviews();
                     continue;
             }
 
@@ -66,6 +70,7 @@ public static class AdminMenu
         Console.WriteLine("[4] Edit an existing reservation");
         Console.WriteLine("[5] Cancel an existing reservation");
         Console.WriteLine("[6] Open Room Menu");
+        Console.WriteLine("[7] View reviews");
         Console.WriteLine("[0] Back");
     }
 
@@ -87,7 +92,7 @@ public static class AdminMenu
 
             int choice = ConsoleHelper.SelectionMenu(options, "ROOM MENU");
 
-            if (choice == -1)
+            if (choice == -1 || choice == -2)
                 return;
 
             switch (choice)
