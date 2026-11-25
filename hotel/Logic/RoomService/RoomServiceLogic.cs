@@ -17,18 +17,9 @@ public class RoomServiceLogic
 
     public List<RoomServiceModel> GetFoodAndDrinks()
     {
-        return new List<RoomServiceModel>
-        {
-            new RoomServiceModel("Grilled chicken salad", "Grilled chicken, greens and house dressing", 0, 18.00),
-            new RoomServiceModel("Classic cheeseburger", "Beef, aged cheese, lettuce and fries", 0, 19.50),
-            new RoomServiceModel("Seasonal pasta", "Pasta with vegetables and parmesan", 0, 17.50),
-            new RoomServiceModel("Chocolate cake", "Warm chocolate cake with vanilla ice cream", 0, 8.50),
-            new RoomServiceModel("Bottled water", "Still or sparkling", 0, 3.50),
-            new RoomServiceModel("Soft drink", "Cola, lemonade or iced tea", 0, 3.75),
-            new RoomServiceModel("Coffee or tea", "Ask about today's tea selection", 0, 3.50)
-        };
+        return RoomServiceAccess.GetFoodAndDrinks();
     }
-
+    
     public List<RoomServiceModel> GetHousekeeping()
     {
         return new List<RoomServiceModel>

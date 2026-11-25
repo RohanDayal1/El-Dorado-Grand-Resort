@@ -15,6 +15,7 @@ public static class DatabaseInitializer
 
         connection.Execute(
             @"
+            DROP TABLE IF EXISTS RestaurantMenu;
             DROP TABLE IF EXISTS RoomServiceOrderItem;
             DROP TABLE IF EXISTS RoomServiceOrder;
             DROP TABLE IF EXISTS Facility_Reservation;
@@ -101,24 +102,31 @@ public static class DatabaseInitializer
                 FOREIGN KEY (Room_Id) REFERENCES Room(Room_Id) ON DELETE RESTRICT
             );
 
+            CREATE TABLE RestaurantMenu (
+                RestaurantMenu_Id INTEGER PRIMARY KEY,
+                Name TEXT NOT NULL,
+                Description TEXT NOT NULL,
+                Price REAL NOT NULL
+            );
+
             CREATE TABLE RoomServiceOrder (
-            RoomServiceOrder_Id INTEGER PRIMARY KEY,
-            Reservation_Id INTEGER NOT NULL,
-            RoomNumber INTEGER NOT NULL,
-            OrderDate TEXT NOT NULL,
-            Status TEXT NOT NULL,
-            TotalPrice REAL NOT NULL,
-            FOREIGN KEY (Reservation_Id) REFERENCES Reservation(Reservation_Id)
+                RoomServiceOrder_Id INTEGER PRIMARY KEY,
+                Reservation_Id INTEGER NOT NULL,
+                RoomNumber INTEGER NOT NULL,
+                OrderDate TEXT NOT NULL,
+                Status TEXT NOT NULL,
+                TotalPrice REAL NOT NULL,
+                FOREIGN KEY (Reservation_Id) REFERENCES Reservation(Reservation_Id)
             );
 
             CREATE TABLE RoomServiceOrderItem (
-            RoomServiceOrderItem_Id INTEGER PRIMARY KEY,
-            RoomServiceOrder_Id INTEGER NOT NULL,
-            Name TEXT NOT NULL,
-            Quantity INTEGER NOT NULL,
-            Price REAL NOT NULL,
-            FOREIGN KEY (RoomServiceOrder_Id) REFERENCES RoomServiceOrder(RoomServiceOrder_Id)
-            );
+                RoomServiceOrderItem_Id INTEGER PRIMARY KEY,
+                RoomServiceOrder_Id INTEGER NOT NULL,
+                Name TEXT NOT NULL,
+                Quantity INTEGER NOT NULL,
+                Price REAL NOT NULL,
+                FOREIGN KEY (RoomServiceOrder_Id) REFERENCES RoomServiceOrder(RoomServiceOrder_Id)
+                );
 
             CREATE TABLE Facility (
                 Facility_Id INTEGER PRIMARY KEY,
@@ -271,6 +279,15 @@ public static class DatabaseInitializer
                 (Activity_Reservation_Id, Account_Id, Activity_Id, ReservationDate, StartTime, EndTime, PartySize, Status) VALUES
                 (1, 2, 1, '2026-11-03', '08:00', '09:00', 2, 'confirmed'),
                 (2, 3, 2, '2026-11-11', '10:00', '12:00', 4, 'confirmed');
+            
+            INSERT INTO RestaurantMenu (Name, Description, Price) VALUES
+                ('Grilled chicken salad', 'Grilled chicken, greens and house dressing', 18.00),
+                ('Classic cheeseburger', 'Beef, aged cheese, lettuce and fries', 19.50),
+                ('Seasonal pasta', 'Pasta with vegetables and parmesan', 17.50),
+                ('Chocolate cake', 'Warm chocolate cake with vanilla ice cream', 8.50),
+                ('Bottled water', 'Still or sparkling', 3.50),
+                ('Soft drink', 'Cola, lemonade or iced tea', 3.75),
+                ('Coffee or tea', 'Ask about today''s tea selection', 3.50);
         "
         );
     }
