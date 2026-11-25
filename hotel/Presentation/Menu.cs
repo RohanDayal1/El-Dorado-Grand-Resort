@@ -129,7 +129,7 @@ public static class Menu
 				case 8:
 					if (new AdminLogic().IsAdmin(signedInAccount))
 					{
-						AdminMenu.StartAdminMenu();
+						AdminMenu.StartAdminMenu(signedInAccount);
 					}
 					else
 					{

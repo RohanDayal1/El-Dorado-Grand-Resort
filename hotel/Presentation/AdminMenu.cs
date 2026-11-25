@@ -2,8 +2,16 @@ public static class AdminMenu
 {
     private const string Border = "============================================================";
 
-    public static void StartAdminMenu()
+    public static void StartAdminMenu(AccountModel? account)
     {
+        if (!new AdminLogic().IsAdmin(account))
+        {
+            ConsoleHelper.ShowHeader("ACCESS DENIED");
+            Console.WriteLine("  Resort administration is only available to administrators.");
+            ConsoleHelper.WaitForEnter();
+            return;
+        }
+
         bool viewadminmenu = true;
         while (viewadminmenu)
         {
@@ -15,7 +23,8 @@ public static class AdminMenu
                 "Edit an existing reservation",
                 "Cancel an existing reservation",
                 "Open Room Menu",
-                "View reviews"
+                "View reviews",
+                "View resort statistics"
             };
 
             int choice = ConsoleHelper.SelectionMenu(options, "ADMIN MENU");
@@ -46,6 +55,9 @@ public static class AdminMenu
                 case 6:
                     ReviewMenu.ShowAllReviews();
                     continue;
+                case 7:
+                    StatisticsMenu.Start(account);
+                    break;
             }
 
             if (viewadminmenu)
@@ -71,6 +83,7 @@ public static class AdminMenu
         Console.WriteLine("[5] Cancel an existing reservation");
         Console.WriteLine("[6] Open Room Menu");
         Console.WriteLine("[7] View reviews");
+        Console.WriteLine("[8] View resort statistics");
         Console.WriteLine("[0] Back");
     }
 
