@@ -69,4 +69,10 @@ public static class RoomServiceAccess
         return orders;
     }
     
+    public static List<RoomServiceModel> GetFoodAndDrinks()
+    {
+        string sql = "SELECT Name, Description, 0 AS Quantity, Price FROM RestaurantMenu";
+        return _connection.Query<RoomServiceModel>(sql).ToList();
+    }
+    
 }

@@ -12,5 +12,7 @@ public class RoomServiceModel
         Quantity = quantity;
         Price = price;
     }
+
+    public RoomServiceModel() { }
     
 }
