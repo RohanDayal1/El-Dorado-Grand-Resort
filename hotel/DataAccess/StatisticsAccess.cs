@@ -2,50 +2,58 @@ using Dapper;
 
 public static class StatisticsAccess
 {
-    public static ResortStatisticsDataModel GetResortStatisticsData()
+    public static (
+        List<ReservationModel> Reservations,
+        List<AccountModel> Accounts,
+        List<RoomModel> Rooms,
+        List<ReservationRoomModel> ReservationRooms,
+        List<ReviewModel> Reviews,
+        List<FacilityModel> Facilities,
+        List<FacilityReservationModel> FacilityReservations,
+        List<FacilityServiceModel> FacilityServices
+    ) GetResortStatisticsData()
     {
         using var connection = DatabaseInitializer.Connect();
         using var results = connection.QueryMultiple(
             @"
-            SELECT Status, CheckInDate, CheckOutDate, Adults, Children, TotalCost
+            SELECT Reservation_Id AS ReservationId, ReservationCode, User_Id AS UserId,
+                   CheckInDate, CheckOutDate, Adults, Children, TotalCost, Status
             FROM Reservation;
 
-            SELECT Role
+            SELECT Account_Id AS Id, User_Id AS UserId, Role
             FROM Account;
 
-            SELECT room.Room_Id AS RoomId,
-                   r.Status AS ReservationStatus,
-                   r.CheckInDate,
-                   r.CheckOutDate
-            FROM Room room
-            LEFT JOIN Reservation_Room rr ON rr.Room_Id = room.Room_Id
-            LEFT JOIN Reservation r ON r.Reservation_Id = rr.Reservation_Id
-            WHERE room.Status = 'active';
+            SELECT Room_Id AS RoomId, Room_Type_Id, RoomNumber, Status
+            FROM Room;
 
-            SELECT Rating
+            SELECT Reservation_Id AS ReservationId, Room_Id AS RoomId
+            FROM Reservation_Room;
+
+            SELECT Review_Id AS ReviewId, Reservation_Id AS ReservationId,
+                   Rating, Feedback, CreatedAt
             FROM Review;
 
-            SELECT f.Facility_Id AS FacilityId,
-                   f.Name AS FacilityName,
-                   fr.Facility_Reservation_Id AS FacilityReservationId,
-                   fr.Status AS FacilityReservationStatus,
-                   r.Status AS ReservationStatus,
-                   fs.Facility_Service_Id AS ServiceId,
-                   fs.Name AS ServiceName
-            FROM Facility f
-            LEFT JOIN Facility_Reservation fr ON fr.Facility_Id = f.Facility_Id
-            LEFT JOIN Reservation r ON r.Reservation_Id = fr.Reservation_Id
-            LEFT JOIN Facility_Service fs ON fs.Facility_Service_Id = fr.Facility_Service_Id
-            ORDER BY f.Facility_Id, fr.Facility_Reservation_Id;"
+            SELECT Facility_Id AS FacilityId, Name
+            FROM Facility;
+
+            SELECT Facility_Reservation_Id AS FacilityReservationId,
+                   Reservation_Id AS ReservationId, Facility_Id AS FacilityId,
+                   Facility_Service_Id AS FacilityServiceId, Status
+            FROM Facility_Reservation;
+
+            SELECT Facility_Service_Id AS FacilityServiceId, Facility_Id AS FacilityId, Name
+            FROM Facility_Service;"
         );
 
-        return new ResortStatisticsDataModel
-        {
-            Reservations = results.Read<ReservationStatisticsData>().ToList(),
-            Accounts = results.Read<AccountStatisticsData>().ToList(),
-            Rooms = results.Read<RoomStatisticsData>().ToList(),
-            Reviews = results.Read<ReviewStatisticsData>().ToList(),
-            Facilities = results.Read<FacilityStatisticsData>().ToList(),
-        };
+        return (
+            results.Read<ReservationModel>().ToList(),
+            results.Read<AccountModel>().ToList(),
+            results.Read<RoomModel>().ToList(),
+            results.Read<ReservationRoomModel>().ToList(),
+            results.Read<ReviewModel>().ToList(),
+            results.Read<FacilityModel>().ToList(),
+            results.Read<FacilityReservationModel>().ToList(),
+            results.Read<FacilityServiceModel>().ToList()
+        );
     }
 }

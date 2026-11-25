@@ -3,59 +3,51 @@ public class StatisticsLogic
     public ResortStatisticsModel GetResortStatistics(DateTime? today = null)
     {
         DateTime reportDate = (today ?? DateTime.Today).Date;
-        ResortStatisticsDataModel data = StatisticsAccess.GetResortStatisticsData();
-        List<ReservationStatisticsData> confirmedReservations = data.Reservations
-            .Where(reservation => HasStatus(reservation.Status, "confirmed"))
+        var data = StatisticsAccess.GetResortStatisticsData();
+        var reservationsById = data.Reservations.ToDictionary(item => item.ReservationId);
+        var confirmedReservations = data.Reservations
+            .Where(item => HasStatus(item.Status, "confirmed"))
             .ToList();
-        List<FacilityStatisticsData> confirmedFacilityBookings = data.Facilities
-            .Where(IsConfirmedFacilityBooking)
-            .ToList();
-        var reviewsByRating = Enumerable.Range(1, 5)
-            .Select(rating => new RatingStatistics
-                { Rating = rating, ReviewCount = data.Reviews.Count(review => review.Rating == rating) })
+        var activeRoomIds = data.Rooms
+            .Where(room => HasStatus(room.Status, "active"))
+            .Select(room => room.RoomId)
+            .ToHashSet();
+        var occupiedRoomIds = data.ReservationRooms
+            .Where(assignment =>
+                activeRoomIds.Contains(assignment.RoomId)
+                && reservationsById.TryGetValue(assignment.ReservationId, out var reservation)
+                && HasStatus(reservation.Status, "confirmed")
+                && IsStayingOn(reservation, reportDate)
+            )
+            .Select(assignment => assignment.RoomId)
+            .ToHashSet();
+        var confirmedFacilityBookings = data.FacilityReservations
+            .Where(booking =>
+                HasStatus(booking.Status, "confirmed")
+                && reservationsById.TryGetValue(booking.ReservationId, out var reservation)
+                && HasStatus(reservation.Status, "confirmed")
+            )
             .ToList();
 
-        // checks status of reservation
         int totalReservations = data.Reservations.Count;
         int cancelledReservations = data.Reservations.Count(
-            reservation => HasStatus(reservation.Status, "cancelled"));
-        int activeRooms = data.Rooms.Select(room => room.RoomId).Distinct().Count();
-        int occupiedRooms = data.Rooms
-            .Where(room =>
-                HasStatus(room.ReservationStatus, "confirmed")
-                && room.CheckInDate.HasValue
-                && room.CheckOutDate.HasValue
-                && room.CheckInDate.Value.Date <= reportDate
-                && room.CheckOutDate.Value.Date > reportDate
-            )
-            .Select(room => room.RoomId)
-            .Distinct()
-            .Count();
-
-        // calculate bookings
-        decimal confirmedBookingValue = confirmedReservations.Sum(reservation => reservation.TotalCost);
+            item => HasStatus(item.Status, "cancelled"));
         int totalReviews = data.Reviews.Count;
-
-        List<FacilityBookingStatistics> bookingsByFacility = data.Facilities
-            .GroupBy(facility => new { facility.FacilityId, facility.FacilityName })
-            .Select(group => new FacilityBookingStatistics
-            {
-                FacilityName = group.Key.FacilityName,
-                ConfirmedBookings = group.Count(IsConfirmedFacilityBooking),
-            })
-            .OrderBy(facility => facility.FacilityName)
-            .ToList();
-
+        decimal confirmedBookingValue = confirmedReservations.Sum(item => item.TotalCost);
+        var serviceNames = data.FacilityServices.ToDictionary(
+            service => service.FacilityServiceId,
+            service => service.Name
+        );
         var mostBookedService = confirmedFacilityBookings
-            .Where(booking => booking.ServiceId.HasValue && booking.ServiceName != null)
-            .GroupBy(booking => new { booking.ServiceId, booking.ServiceName })
-            .Select(group => new { group.Key.ServiceName, Count = group.Count() })
+            .GroupBy(booking => booking.FacilityServiceId)
+            .Select(group => new
+            {
+                Name = serviceNames[group.Key],
+                Count = group.Count(),
+            })
             .OrderByDescending(service => service.Count)
-            .ThenBy(service => service.ServiceName, StringComparer.Ordinal)
+            .ThenBy(service => service.Name, StringComparer.Ordinal)
             .FirstOrDefault();
-        int guestCountStayingToday = confirmedReservations
-            .Where(reservation => IsStayingOn(reservation, reportDate))
-            .Sum(GetGuestCount);
 
         return new ResortStatisticsModel
         {
@@ -63,11 +55,15 @@ public class StatisticsLogic
             ConfirmedReservations = confirmedReservations.Count,
             CancelledReservations = cancelledReservations,
             RegisteredGuests = data.Accounts.Count(account => HasStatus(account.Role, "guest")),
-            ActiveRooms = activeRooms,
-            OccupiedRoomsToday = occupiedRooms,
-            AvailableRoomsToday = Math.Max(0, activeRooms - occupiedRooms),
-            OccupancyPercentage = activeRooms == 0 ? 0 : occupiedRooms * 100m / activeRooms,
-            GuestsStayingToday = guestCountStayingToday,
+            ActiveRooms = activeRoomIds.Count,
+            OccupiedRoomsToday = occupiedRoomIds.Count,
+            AvailableRoomsToday = Math.Max(0, activeRoomIds.Count - occupiedRoomIds.Count),
+            OccupancyPercentage = activeRoomIds.Count == 0
+                ? 0
+                : occupiedRoomIds.Count * 100m / activeRoomIds.Count,
+            GuestsStayingToday = confirmedReservations
+                .Where(reservation => IsStayingOn(reservation, reportDate))
+                .Sum(GetGuestCount),
             ArrivingGuestsToday = confirmedReservations
                 .Where(reservation => reservation.CheckInDate.Date == reportDate)
                 .Sum(GetGuestCount),
@@ -82,20 +78,30 @@ public class StatisticsLogic
                 ? 0
                 : confirmedBookingValue / confirmedReservations.Count,
             TotalReviews = totalReviews,
-            AverageReviewRating = totalReviews == 0 ? 0 : (decimal)data.Reviews.Average(review => review.Rating),
+            AverageReviewRating = totalReviews == 0
+                ? 0
+                : (decimal)data.Reviews.Average(review => review.Rating),
             ConfirmedFacilityBookings = confirmedFacilityBookings.Count,
-            MostBookedServiceName = mostBookedService?.ServiceName,
+            MostBookedServiceName = mostBookedService?.Name,
             MostBookedServiceCount = mostBookedService?.Count ?? 0,
-            ReviewsByRating = reviewsByRating,
-            BookingsByFacility = bookingsByFacility,
+            ReviewsByRating = Enumerable.Range(1, 5)
+                .Select(rating => new RatingStatistics
+                {
+                    Rating = rating,
+                    ReviewCount = data.Reviews.Count(review => review.Rating == rating),
+                })
+                .ToList(),
+            BookingsByFacility = data.Facilities
+                .Select(facility => new FacilityBookingStatistics
+                {
+                    FacilityName = facility.Name,
+                    ConfirmedBookings = confirmedFacilityBookings.Count(
+                        booking => booking.FacilityId == facility.FacilityId
+                    ),
+                })
+                .OrderBy(facility => facility.FacilityName)
+                .ToList(),
         };
-    }
-
-    private static bool IsConfirmedFacilityBooking(FacilityStatisticsData booking)
-    {
-        return booking.FacilityReservationId.HasValue
-            && HasStatus(booking.FacilityReservationStatus, "confirmed")
-            && HasStatus(booking.ReservationStatus, "confirmed");
     }
 
     private static bool HasStatus(string? actual, string expected)
@@ -103,12 +109,12 @@ public class StatisticsLogic
         return string.Equals(actual, expected, StringComparison.OrdinalIgnoreCase);
     }
 
-    private static int GetGuestCount(ReservationStatisticsData reservation)
+    private static int GetGuestCount(ReservationModel reservation)
     {
         return reservation.Adults + reservation.Children;
     }
 
-    private static bool IsStayingOn(ReservationStatisticsData reservation, DateTime date)
+    private static bool IsStayingOn(ReservationModel reservation, DateTime date)
     {
         return reservation.CheckInDate.Date <= date && reservation.CheckOutDate.Date > date;
     }
