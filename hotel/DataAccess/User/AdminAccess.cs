@@ -194,7 +194,8 @@ public static class AdminAccess
                             rt.BedType,
                             Status
                             FROM Room
-                            INNER JOIN Room_Type rt ON Room.Room_Type_Id = rt.Room_Type_Id";
+                            INNER JOIN Room_Type rt ON Room.Room_Type_Id = rt.Room_Type_Id
+                            ORDER BY RoomNumber";
 
         List<RoomDetailModel> Rooms = connection.Query<RoomDetailModel>(sql).ToList();
         return Rooms;

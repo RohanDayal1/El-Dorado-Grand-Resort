@@ -218,4 +218,44 @@ public class AdminLogic
         return RoomValidator.ValidateRoomTypeId(roomtypes, roomtypeid);
     }
 
+
+    public List<RoomDetailModel> GetFloorPlan()
+    {
+        List<RoomDetailModel> allRooms = GetAllRooms();
+        DateTime today = DateTime.Today;
+        foreach (RoomDetailModel room in allRooms)
+        {
+            List<ReservationModel> reservations = AdminAccess.GetReservationsByRoomId(room.RoomId);
+            room.RoomAvailability = CheckRoomAvailability(room.Status, reservations, today);
+        }
+        return allRooms;
+    }
+
+    public RoomAvailability CheckRoomAvailability(string roomstatus, List<ReservationModel> reservations, DateTime today)
+    {
+        if (roomstatus == "inactive")
+        {
+            return RoomAvailability.Maintenance;
+        }
+        
+        bool hasFutureReservation = false;
+        foreach (ReservationModel reservation in reservations)
+        {
+            if (reservation.Status == "confirmed" && reservation.CheckInDate <= today && reservation.CheckOutDate > today)
+            {
+                return RoomAvailability.Occupied;
+            }
+            if (reservation.Status == "confirmed" && reservation.CheckInDate > today)
+            {
+                hasFutureReservation = true;
+            }
+        }
+
+        if (hasFutureReservation)
+        {
+            return RoomAvailability.Reserved;
+        }
+        return RoomAvailability.Available;
+    }
+
 }

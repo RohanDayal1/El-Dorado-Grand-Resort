@@ -211,11 +211,19 @@ public static class DatabaseInitializer
                 (1, 'Standard', 'Comfortable room for two guests', 2, 100.00, 'Double'),
                 (2, 'Deluxe', 'Spacious room with a balcony', 2, 150.00, 'King'),
                 (3, 'Family', 'Room for a family of four', 4, 200.00, 'Double and two singles'),
-                (4, 'Suite', 'Luxury suite with a separate living area', 4, 300.00, 'King and sofa bed');
+                (4, 'Suite', 'Luxury suite with a separate living area', 4, 300.00, 'King and sofa bed'),
+                (5, 'Single', 'Room for solo travelers', 1, 50.00, 'Single bed'),
+                (6, 'Triple', 'Room for three friends traveling together', 3, 150.00, 'Three singles'),
+                (7, 'Golden Suite', 'Our most exclusive suite, finished in gold with panoramic sea views', 4, 600, 'Two kings'),
+                (8, 'Honeymoon Suite', 'romantic suite for couples', 2, 250.00, 'King');
 
             INSERT INTO Room (Room_Id, Room_Type_Id, RoomNumber) VALUES
                 (1, 1, 101), (2, 1, 102), (3, 2, 201), (4, 2, 202),
-                (5, 3, 301), (6, 3, 302), (7, 4, 401), (8, 4, 402);
+                (5, 3, 301), (6, 3, 302), (7, 4, 401), (8, 4, 402),
+                (9, 1, 103), (10, 5, 104), (11, 5, 105), (12, 5, 106),
+                (13, 6, 203), (14, 6, 204), (15, 7, 419), (16, 7, 420),
+                (17, 2, 205), (18, 2, 206), (19, 3, 303), (20, 3, 304), 
+                (21, 4, 403), (22, 4, 404), (23, 8, 310), (24, 8, 311);
 
             INSERT INTO Reservation (Reservation_Id, ReservationCode, User_Id, CheckInDate, CheckOutDate, Adults, Children, TotalCost, Status) VALUES
                 (1, 'K7M2QX', 2, '2026-11-01', '2026-11-04', 2, 0, 300.00, 'confirmed'),

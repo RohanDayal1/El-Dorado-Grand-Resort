@@ -86,7 +86,8 @@ public static class AdminMenu
                 "Add new room type",
                 "Edit a room's type",
                 "Edit a roomtype information's",
-                "Deactivate a room"
+                "Deactivate a room",
+                "View floor plan"
             };
 
             int choice = ConsoleHelper.SelectionMenu(options, "ROOM MENU");
@@ -114,6 +115,12 @@ public static class AdminMenu
                 case 5:
                     ShowRoomDeactivation();
                     break;
+                case 6:
+                    ShowFloorPlan();
+                    break;
+                default:
+                    Console.WriteLine("invalid option");
+                    continue;
             }
 
             if (viewroommenu)
@@ -138,6 +145,7 @@ public static class AdminMenu
         Console.WriteLine("[4] Edit a room's type");
         Console.WriteLine("[5] Edit a roomtype information's");
         Console.WriteLine("[6] Deactivate a room");
+        Console.WriteLine("[7] View floor plan");
         Console.WriteLine("[0] Back to Admin Menu");
     }
 
@@ -716,6 +724,88 @@ public static class AdminMenu
             if (choice == "n")
                 return false;
             Console.WriteLine("Invalid input");
+        }
+    }
+
+    public static void ShowFloorPlan()
+    {
+        Console.WriteLine();
+        List<RoomDetailModel> rooms = new AdminLogic().GetFloorPlan();
+        for (int floor = 4; floor >= 1; floor--)
+        {
+            List<RoomDetailModel> floorRooms = [];
+            foreach (var room in rooms)
+            {
+                if (room.RoomNumber / 100 == floor)
+                {
+                    floorRooms.Add(room);
+                }
+            }
+
+            Console.Write("-----");
+            foreach (var room in floorRooms)
+            {
+                Console.Write("-------");
+            }
+            Console.WriteLine("-");
+
+            Console.Write($"| F{floor} ");
+            foreach (var room in floorRooms)
+            {
+                Console.Write("|  ");
+                Console.ForegroundColor = room.RoomAvailability switch
+                {
+                    RoomAvailability.Maintenance => ConsoleColor.DarkGray,
+                    RoomAvailability.Occupied => ConsoleColor.Red,
+                    RoomAvailability.Reserved => ConsoleColor.Yellow,
+                    RoomAvailability.Available => ConsoleColor.Green,
+                    _ => ConsoleColor.White
+                };
+                Console.Write($"{room.RoomNumber} ");
+                Console.ResetColor();
+            }
+            Console.WriteLine("|");
+
+            Console.Write("-----");
+            foreach (var room in floorRooms)
+            {
+                Console.Write("-------");
+            }
+            Console.WriteLine("-");
+        }
+
+        while (true)
+        {
+            string? choice = ReadInput("Choose a room number for additional information, q to go back: ");
+            if (choice == null) {return;}
+
+            if (!int.TryParse(choice, out int number))
+            {
+                Console.WriteLine("invalid input");
+                continue;
+            }
+
+            RoomDetailModel? chosenRoom = null;
+            foreach (var room in rooms)
+            {
+                if (room.RoomNumber == number)
+                {
+                    chosenRoom = room;
+                    break;
+                }
+            }
+            if (chosenRoom == null)
+            {
+                Console.WriteLine("Room not found, try again.");
+                continue;
+            }
+            
+            Console.WriteLine();
+            Console.WriteLine($"Room number:  {chosenRoom.RoomNumber}");
+            Console.WriteLine($"Room type:    {chosenRoom.Name}");
+            Console.WriteLine($"Capacity:     {chosenRoom.Capacity}");
+            Console.WriteLine($"Availability: {chosenRoom.RoomAvailability}");
+            Console.WriteLine();
         }
     }
 }

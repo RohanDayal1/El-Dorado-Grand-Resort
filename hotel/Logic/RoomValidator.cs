@@ -49,7 +49,7 @@ public static class RoomValidator
     public static bool ValidateRoomTypeId(List<RoomTypeModel> roomtypes, int roomtypeId)
     {
         List<int> allRoomTypeIds = new();
-        foreach (var room in roomtypes)
+        foreach (RoomTypeModel room in roomtypes)
         {
             allRoomTypeIds.Add(room.Room_Type_Id);
         }
